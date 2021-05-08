@@ -5,28 +5,39 @@
 {% load follow_extras %}
 {% block extra-scripts %}
 	{{ block.super }}
-	<script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
-	<script src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
-	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
-	<script type="text/javascript">
-	$(document).ready(function() {
-	    $('#item-identifiers').DataTable();
-	} );
-	</script>
-
-	<script type="text/javascript">
-
-	  jQuery(function() {
-	    jQuery('#users').change(function() {
-	        this.form.submit();
-	    });
-	});
-	</script>
+	
 {% endblock extra-scripts %}
 
 
 {% block main %}
 <div class="container">
-	Coulson
+	<h2>Flourish Reports</h2>
+	  <p>Select a tab for the report you want.</p>
+	
+	  <ul class="nav nav-tabs">
+	    <li class="active"><a data-toggle="tab" href="#home">Recruiting</a></li>
+	    <li><a data-toggle="tab" href="#menu1">Management</a></li>
+	    <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
+	    <li><a data-toggle="tab" href="#menu3">Menu 3</a></li>
+	  </ul>
+	
+	  <div class="tab-content">
+	    <div id="home" class="tab-pane fade in active">
+	      <h3>HOME</h3>
+	      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+	    </div>
+	    <div id="menu1" class="tab-pane fade">
+	      <h3>Menu 1</h3>
+	      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+	    </div>
+	    <div id="menu2" class="tab-pane fade">
+	      <h3>Menu 2</h3>
+	      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+	    </div>
+	    <div id="menu3" class="tab-pane fade">
+	      <h3>Menu 3</h3>
+	      <p>Eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+	    </div>
+	  </div>
 </div>
 {% endblock main %}
