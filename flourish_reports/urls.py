@@ -13,9 +13,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path
 
+from .views import HomeView
+
+
+app_name = 'flourish_reports'
+
+subject_identifier = '066\-[0-9\-]+'
+screening_identifier = '[A-Z0-9]{8}'
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', HomeView.as_view(), name='home_url'),
 ]
