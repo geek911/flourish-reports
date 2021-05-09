@@ -204,7 +204,8 @@ class HomeView(
                 recruitment = self.recruitment(start_date=start_date, end_date=end_date)
 
         context.update(
-            recruitment=recruitment)
+            recruitment=recruitment,
+            recruitment_form = RecruitmentReportForm())
         return context
 
     @method_decorator(login_required)
