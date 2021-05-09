@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
 
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
@@ -16,7 +17,7 @@ from ..forms import RecruitmentReportForm
 
 class HomeView(
         EdcBaseViewMixin, NavbarViewMixin,
-        TemplateView):
+        TemplateView, FormView):
 
     form_class = RecruitmentReportForm
     template_name = 'flourish_reports/home.html'
