@@ -18,7 +18,7 @@
 	    <li class="active"><a data-toggle="tab" href="#recruitment">Recruitment</a></li>
 	    <li><a data-toggle="tab" href="#management">Management</a></li>
 	    <li><a data-toggle="tab" href="#enrolment">Enrolments</a></li>
-	    <li><a data-toggle="tab" href="#menu3">Menu 3</a></li>
+	    <li><a data-toggle="tab" href="#lab">Lab</a></li>
 	  </ul>
 	
 	  <div class="tab-content">
@@ -29,7 +29,7 @@
 	      <div class="panel-heading">
 	      <h4>FLOURISH Recruitment Productivity Report</h4>
 	      {% csrf_token %}
-		  {% crispy recruitment_form %}
+		  {% crispy form %}
 	      </div>
 	      <div class="panel-body">
 		      <table class="table table-hover">
@@ -68,16 +68,16 @@
 	    </div>
 	    </div>
 	    <div id="management" class="tab-pane fade">
-	      <h3>Menu 1</h3>
-	      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+	      <h3>Management report</h3>
+	      <p>Still under construction.</p>
 	    </div>
 	    <div id="enrolment" class="tab-pane fade">
-	      <h3>Menu 2</h3>
-	      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+	      <h3>Enrolment report</h3>
+	      <p>Still under construction.</p>
 	    </div>
-	    <div id="menu3" class="tab-pane fade">
-	      <h3>Menu 3</h3>
-	      <p>Eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+	    <div id="lab" class="tab-pane fade">
+	      <h3>Lab report</h3>
+	      <p>Still under construction.</p>
 	    </div>
 	  </div>
 </div>

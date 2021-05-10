@@ -194,19 +194,18 @@ class HomeView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
         # Recruitment report
         recruitment = self.recruitment()
         if self.request.method == 'POST':
-            recruitment_form = RecruitmentReportForm(self.request.POST)
-            if recruitment_form.is_valid():
-                start_date = recruitment_form.data['start_date']
-                end_date = recruitment_form.data['end_date']
+            recruitment_report_form = RecruitmentReportForm(self.request.POST)
+            if recruitment_report_form.is_valid():
+                print('Form valid @@@@@@@@@@@@@@@@2')
+                start_date = recruitment_report_form.data['start_date']
+                end_date = recruitment_report_form.data['end_date']
                 recruitment = self.recruitment(start_date=start_date, end_date=end_date)
 
         context.update(
-            recruitment=recruitment,
-            recruitment_form = RecruitmentReportForm())
+            recruitment=recruitment)
         return context
 
     @method_decorator(login_required)

@@ -16,7 +16,7 @@ class RecruitmentReportForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.form_method = 'post'
+        self.helper.form_method = 'POST'
         self.helper.form_id = 'recruitment_report'
         self.helper.form_action = 'flourish_reports:home_url'
         self.helper.form_class = 'form-inline'
