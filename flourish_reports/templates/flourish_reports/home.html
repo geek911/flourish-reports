@@ -24,12 +24,12 @@
 	  <div class="tab-content">
 	    <div id="recruitment" class="tab-pane fade in active">
 	    <br>
+	    {% csrf_token %}
+		{% crispy form %}
 	    <br>
 	    <div class="panel panel-info">
 	      <div class="panel-heading">
 	      <h4>FLOURISH Recruitment Productivity Report</h4>
-	      {% csrf_token %}
-		  {% crispy form %}
 	      </div>
 	      <div class="panel-body">
 		      <table class="table table-hover">
