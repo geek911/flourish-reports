@@ -20,9 +20,6 @@ from .views import HomeView
 
 app_name = 'flourish_reports'
 
-subject_identifier = '066\-[0-9\-]+'
-screening_identifier = '[A-Z0-9]{8}'
-
 urlpatterns = [
     path('', HomeView.as_view(), name='home_url'),
 ]

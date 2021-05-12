@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import FormView
 
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
@@ -16,8 +17,9 @@ from ..forms import RecruitmentReportForm
 
 class HomeView(
         EdcBaseViewMixin, NavbarViewMixin,
-        TemplateView):
+        TemplateView, FormView):
 
+    form_class = RecruitmentReportForm
     template_name = 'flourish_reports/home.html'
     navbar_name = 'flourish_reports'
     navbar_selected_item = 'flourish_reports'
@@ -32,8 +34,8 @@ class HomeView(
         if start_date and end_date:
             call_contacted = LogEntry.objects.filter(
                         user_created=username,
-                        created__gte=start_date,
-                        created__lte=end_date).values_list(
+                        created__date__gte=start_date,
+                        created__date__lte=end_date).values_list(
                             'study_maternal_identifier').distinct().count()
         else:
             call_contacted = LogEntry.objects.filter(
@@ -49,8 +51,8 @@ class HomeView(
             successful = LogEntry.objects.filter(
                 ~Q(phone_num_success='none_of_the_above'),
                 user_created=username,
-                created__gte=start_date,
-                created__lte=end_date,
+                created__date__gte=start_date,
+                created__date__lte=end_date,
                 phone_num_success__isnull=False).values_list(
                     'study_maternal_identifier').distinct().count()
         else:
@@ -68,8 +70,8 @@ class HomeView(
         if start_date and end_date:
             unsuccessful = LogEntry.objects.filter(
                 user_created=username,
-                created__gte=start_date,
-                created__lte=end_date,
+                created__date__gte=start_date,
+                created__date__lte=end_date,
                 phone_num_success__isnull=True,
                 phone_num_success='none_of_the_above').values_list(
                     'study_maternal_identifier').distinct().count()
@@ -89,8 +91,8 @@ class HomeView(
             accepting = LogEntry.objects.filter(
                 Q(appt_date__isnull=False) | Q(appt='Yes'),
                 user_created=username,
-                created__gte=start_date,
-                created__lte=end_date,).values_list(
+                created__date__gte=start_date,
+                created__date__lte=end_date,).values_list(
                     'study_maternal_identifier').distinct().count()
         else:
             accepting = LogEntry.objects.filter(
@@ -106,8 +108,8 @@ class HomeView(
         if start_date and end_date:
             conversion_logs = LogEntry.objects.filter(
                 user_created=username,
-                created__gte=start_date,
-                created__lte=end_date,).values_list(
+                created__date__gte=start_date,
+                created__date__lte=end_date,).values_list(
                     'study_maternal_identifier')
         else:
             conversion_logs = LogEntry.objects.filter(
@@ -147,7 +149,10 @@ class HomeView(
                     username, start_date=start_date, end_date=end_date)
                 conversion = self.conversion_calls(
                     username, start_date=start_date, end_date=end_date)
-                conversion_percentage = (conversion/call_contacted)*100
+                if conversion:
+                    conversion_percentage = (conversion/call_contacted)*100
+                else:
+                    conversion_percentage = 0
                 report.append(
                     [recruiter.first_name + ' ' + recruiter.last_name,
                      call_contacted,
@@ -168,7 +173,10 @@ class HomeView(
                 unsuccessful = self.unsuccessful_calls(username)
                 accepting = self.accepting_apps(username)
                 conversion = self.conversion_calls(username)
-                conversion_percentage = (conversion/call_contacted)*100
+                if conversion:
+                    conversion_percentage = (conversion/call_contacted)*100
+                else:
+                    conversion_percentage = 0
                 report.append(
                     [recruiter.first_name + ' ' + recruiter.last_name,
                      call_contacted,
@@ -190,20 +198,22 @@ class HomeView(
         totals.append(t_conversion)
         return [totals, report]
 
+    def form_valid(self, form):
+        if form.is_valid():
+            start_date = form.data['start_date']
+            end_date = form.data['end_date']
+            recruitment = self.recruitment(start_date=start_date, end_date=end_date)
+            context = self.get_context_data(**self.kwargs)
+            context.update(
+                form=form,
+                recruitment=recruitment)
+        return self.render_to_response(context)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Recruitment report
         recruitment = self.recruitment()
-        if self.request.method == 'POST':
-            recruitment_report_form = RecruitmentReportForm(self.request.POST)
-            if recruitment_report_form.is_valid():
-                print('Form valid @@@@@@@@@@@@@@@@2')
-                start_date = recruitment_report_form.data['start_date']
-                end_date = recruitment_report_form.data['end_date']
-                recruitment = self.recruitment(start_date=start_date, end_date=end_date)
-
         context.update(
-            form=RecruitmentReportForm(),
             recruitment=recruitment)
         return context
 
