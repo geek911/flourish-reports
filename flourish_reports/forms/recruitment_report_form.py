@@ -25,4 +25,5 @@ class RecruitmentReportForm(forms.Form):
             'start_date',
             'end_date',
             Submit('submit', u'filter report', css_class="btn btn-sm btn-default"),
+            Submit('rdownload_report', u'download report', css_class="btn btn-sm btn-default"),
         )

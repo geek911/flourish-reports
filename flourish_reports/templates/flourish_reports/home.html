@@ -5,7 +5,23 @@
 {% load follow_extras %}
 {% block extra-scripts %}
 	{{ block.super }}
-	
+	<script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
+	<script type="text/javascript">
+	$(document).ready(function() {
+	    $('#item-identifiers').DataTable();
+	} );
+	</script>
+
+	<script type="text/javascript">
+
+	  jQuery(function() {
+	    jQuery('#users').change(function() {
+	        this.form.submit();
+	    });
+	});
+	</script>
 {% endblock extra-scripts %}
 
 
@@ -70,7 +86,59 @@
 	    </div>
 	    <div id="management" class="tab-pane fade">
 	      <h3>Management report</h3>
-	      <p>Still under construction.</p>
+	      <br>
+	      <form method="post">
+		    {% csrf_token %}
+		    <div class="form-row">
+		      <div class="form-group col-md-2 mb-0">
+		        {{ form.start_date|as_crispy_field }}
+		      </div>
+		      <div class="form-group col-md-2 mb-0">
+		        {{ form.end_date|as_crispy_field }}
+		      </div>
+		      <div class="form-group col-md-2 mb-0">
+		      <button class="btn btn-primary" type="submit" value="Submit" name="mdownload_report" ><i class="fa fa-lg fa-floppy-o"></i> download report</button> 
+		      </div>
+		    </div>
+		  </form>
+		 <br>
+	      <div class="raw">
+			<div id="div-home-right" class="col-md-12">
+			{% if management_report_downloads %}
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4>Management Report Downloads</h4>
+				</div>
+				<table id="item-identifiers" class="table table-striped table-bordered" cellspacing="0" width="100%">
+					<thead>
+						<tr>
+							<th>Export identifier</th>
+							<th>Document</th>
+							<th>Report data range</th>
+							<th>Datetime generated</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<th>Export identifier</th>
+							<th>Document</th>
+							<th>Report data range</th>
+							<th>Datetime generated</th>
+						</tr>
+					</tfoot>
+					<tbody>
+						{% for download in management_report_downloads %}
+						<tr>
+					 		<td>{{ download.export_identifier }}</td>
+					 		<td><a href={{ download.file_url }}><i class="fa fa-download fa-sm"></i> file download</a></td>
+					 		<td>{{ download.start_date }} & {{ download.end_date }}</td>
+					 		<td>{{ download.uploaded_at }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% endif %}
+			</div>
 	    </div>
 	    <div id="enrolment" class="tab-pane fade">
 	      <h3>Enrolment report</h3>

@@ -1,3 +1,8 @@
+import os
+import datetime
+from django_pandas.io import read_frame
+
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -13,9 +18,42 @@ from flourish_follow.models import LogEntry
 from flourish_caregiver.models import (
     ScreeningPriorBhpParticipants, SubjectConsent)
 from ..forms import RecruitmentReportForm
+from ..models import ExportFile
+from ..identifiers import ExportIdentifier
+
+
+class DownloadReportMixin:
+    
+    def download_data(
+            self, description=None, start_date=None,
+            end_date=None, report_type=None, df=None):
+        """Export all data.
+        """
+
+        export_identifier = ExportIdentifier().identifier
+
+        options = {
+            'description': description,
+            'export_identifier': export_identifier,
+            'start_date': start_date,
+            'end_date': end_date
+        }
+        doc = ExportFile.objects.create(**options)
+
+        export_path = settings.MEDIA_ROOT + '/documents/'  + report_type +'/' 
+        if not os.path.exists(export_path):
+            os.makedirs(export_path)
+        timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        fname = export_identifier + '_' + timestamp + '.csv'
+        final_path = export_path + fname
+        df.to_csv(final_path, encoding='utf-8', index=False)
+
+        doc.document = final_path
+        doc.save()
 
 
 class HomeView(
+        DownloadReportMixin,
         EdcBaseViewMixin, NavbarViewMixin,
         TemplateView, FormView):
 
@@ -198,22 +236,57 @@ class HomeView(
         totals.append(t_conversion)
         return [totals, report]
 
+    def management_report(self, start_date=None, end_date=None):
+        """Returns RA report for management.
+        """
+        qs = LogEntry.objects.filter(
+            created__date__gte=start_date,
+            created__date__lte=end_date)
+        df = read_frame(qs, fieldnames=[
+            'user_created', 'screening_identifier', 'prev_study',
+            'call_datetime', 'appt', 'appt_reason_unwilling', 'appt_date'])
+        return df
+
     def form_valid(self, form):
         if form.is_valid():
             start_date = form.data['start_date']
             end_date = form.data['end_date']
-            recruitment = self.recruitment(start_date=start_date, end_date=end_date)
+            recruitment = self.recruitment(
+                start_date=start_date, end_date=end_date)
+            if 'rdownload_report' in self.request.POST:
+                self.download_data(
+                    description='Recruitment Productivity Report',
+                    start_date=start_date, end_date=end_date,
+                    report_type='recruitment_productivity_reports',
+                    data=recruitment)
+            elif 'mdownload_report' in self.request.POST:
+                df = self.management_report(
+                    start_date=start_date, end_date=end_date)
+                self.download_data(
+                    description='Management Report',
+                    start_date=start_date, end_date=end_date,
+                    report_type='management_reports', df=df)
+            management_report_downloads = ExportFile.objects.all()
             context = self.get_context_data(**self.kwargs)
             context.update(
+                management_report_downloads=management_report_downloads,
                 form=form,
                 recruitment=recruitment)
         return self.render_to_response(context)
 
+    @property
+    def management_report_downloads(self):
+        """Return a list of downloads.
+        """
+        return None
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        management_report_downloads = ExportFile.objects.all()
         # Recruitment report
         recruitment = self.recruitment()
         context.update(
+            management_report_downloads=management_report_downloads,
             recruitment=recruitment)
         return context
 

@@ -15,11 +15,13 @@ Including another URLconf
 """
 from django.urls import path
 
+from .admin_site import flourish_reports_admin
 from .views import HomeView
 
 
 app_name = 'flourish_reports'
 
 urlpatterns = [
+    path('admin/', flourish_reports_admin.urls),
     path('', HomeView.as_view(), name='home_url'),
 ]
