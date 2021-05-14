@@ -39,14 +39,19 @@ class DownloadReportMixin:
             'end_date': end_date
         }
         doc = ExportFile.objects.create(**options)
-
-        export_path = settings.MEDIA_ROOT + '/documents/'  + report_type +'/' 
-        if not os.path.exists(export_path):
-            os.makedirs(export_path)
+        
+        # Document path
+        upload_to = ExportFile.document.field.upload_to
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         fname = export_identifier + '_' + timestamp + '.csv'
-        final_path = export_path + fname
-        df.to_csv(final_path, encoding='utf-8', index=False)
+        final_path = upload_to  + report_type +'/' + fname
+         
+        # Export path 
+        export_path = settings.MEDIA_ROOT + '/documents/' + report_type +'/'
+        if not os.path.exists(export_path):
+            os.makedirs(export_path)
+        export_path += fname
+        df.to_csv(export_path, encoding='utf-8', index=False)
 
         doc.document = final_path
         doc.save()

@@ -64,3 +64,12 @@ class ExportFile(SiteModelMixin, SearchSlugModelMixin, BaseUuidModel):
         fields = super().get_search_slug_fields()
         fields.append('export_identifier')
         return fields
+
+    @property
+    def file_url(self):
+        """Return the file url.
+        """
+        try:
+            return self.document.url
+        except ValueError:
+            return None
