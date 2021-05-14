@@ -1,6 +1,8 @@
 import os
 import datetime
 from django_pandas.io import read_frame
+import pandas as pd
+
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -258,12 +260,14 @@ class HomeView(
             end_date = form.data['end_date']
             recruitment = self.recruitment(
                 start_date=start_date, end_date=end_date)
+            totals = [['Totals'] + recruitment[0]]
+            data = recruitment[1] + totals
             if 'rdownload_report' in self.request.POST:
                 self.download_data(
                     description='Recruitment Productivity Report',
                     start_date=start_date, end_date=end_date,
                     report_type='recruitment_productivity_reports',
-                    data=recruitment)
+                    df=pd.DataFrame(data))
             elif 'mdownload_report' in self.request.POST:
                 df = self.management_report(
                     start_date=start_date, end_date=end_date)
@@ -271,27 +275,29 @@ class HomeView(
                     description='Management Report',
                     start_date=start_date, end_date=end_date,
                     report_type='management_reports', df=df)
-            management_report_downloads = ExportFile.objects.all()
+            management_report_downloads = ExportFile.objects.filter(
+                description='Management Report').order_by('uploaded_at')
+            recruitment_downloads = ExportFile.objects.filter(
+                description='Recruitment Productivity Report').order_by('uploaded_at')
             context = self.get_context_data(**self.kwargs)
             context.update(
                 management_report_downloads=management_report_downloads,
+                recruitment_downloads=recruitment_downloads,
                 form=form,
                 recruitment=recruitment)
         return self.render_to_response(context)
 
-    @property
-    def management_report_downloads(self):
-        """Return a list of downloads.
-        """
-        return None
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        management_report_downloads = ExportFile.objects.all()
+        management_report_downloads = ExportFile.objects.filter(
+            description='Management Report').order_by('uploaded_at')
+        recruitment_downloads = ExportFile.objects.filter(
+            description='Recruitment Productivity Report').order_by('uploaded_at')
         # Recruitment report
         recruitment = self.recruitment()
         context.update(
             management_report_downloads=management_report_downloads,
+            recruitment_downloads=recruitment_downloads,
             recruitment=recruitment)
         return context
 
