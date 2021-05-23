@@ -155,20 +155,21 @@ class HomeView(
                 user_created=username,
                 created__date__gte=start_date,
                 created__date__lte=end_date,).values_list(
-                    'study_maternal_identifier')
+                    'study_maternal_identifier', flat=True)
         else:
             conversion_logs = LogEntry.objects.filter(
                 user_created=username).values_list(
-                    'study_maternal_identifier')
+                    'study_maternal_identifier', flat=True)
         conversion_list = list(set(conversion_logs))
         screening_list = ScreeningPriorBhpParticipants.objects.filter(
             study_maternal_identifier__in=conversion_list).values_list(
-                'screening_identifier')
+                'screening_identifier', flat=True)
         screening_list = list(set(screening_list))
         conversion = SubjectConsent.objects.filter(
             screening_identifier__in=screening_list).values_list(
-                'screening_identifier').distinct().count()
-        return conversion
+                'screening_identifier', flat=True)
+        conversion = list(set(conversion))
+        return len(conversion)
 
     def recruitment(self, start_date=None, end_date=None):
         """Return a recruitment report.
