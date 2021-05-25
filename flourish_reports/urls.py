@@ -13,9 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path
 
+from .admin_site import flourish_reports_admin
+from .views import HomeView
+
+
+app_name = 'flourish_reports'
+
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', flourish_reports_admin.urls),
+    path('', HomeView.as_view(), name='home_url'),
 ]
