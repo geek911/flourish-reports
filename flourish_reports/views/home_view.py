@@ -171,7 +171,7 @@ class HomeView(
         conversion = list(set(conversion))
         return len(conversion)
 
-    def recruitment(self, start_date=None, end_date=None):
+    def recruitment(self, username=None, start_date=None, end_date=None):
         """Return a recruitment report.
         """
         report = []
@@ -182,6 +182,8 @@ class HomeView(
         t_unsuccessful = 0
         t_accepting = 0
         t_conversion = 0
+        if username and not username == '-----':
+            recruiters = User.objects.filter(username=username)
         for recruiter in recruiters:
             username = recruiter.username
             if start_date and end_date:
