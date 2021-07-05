@@ -1,0 +1,41 @@
+{% load crispy_forms_tags %}
+<div class="panel panel-info">
+	<div class="panel-heading">
+		{% csrf_token %}
+		<span class="pull-right">{% crispy prev_study_form %}</span>
+		<h4>Study Recruitment Report</h4>
+	</div>
+	<div class="panel-body">
+		<table class="table table-hover">
+			<thead>
+				<tr>
+			        <th>Prev Study</th>
+			        <th>Attempts</th>
+			        <th>Pending</th>
+			        <th>Unable to reach</th>
+			        <th>Decline/Uninterested</th>
+			        <th>Thinking</th>
+			        <th>Consented</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for r in pre_study_recruitment.1 %}
+				<tr>
+					{% for v in r %}
+					<td>{{v}}</td>
+					{% endfor %}
+				</tr>
+				{% endfor %}
+				<tr>
+			        <td><b>Totals </b></td>
+			        <td><b>{{ pre_study_recruitment.0.0 }}</b></td>
+			        <td><b>{{ pre_study_recruitment.0.1 }}</b></td>
+			        <td><b>{{ pre_study_recruitment.0.2 }}</b></td>
+			        <td><b>{{ pre_study_recruitment.0.3 }}</b></td>
+			        <td><b>{{ pre_study_recruitment.0.4 }}</b></td>
+			        <td><b></b></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

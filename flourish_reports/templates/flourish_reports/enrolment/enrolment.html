@@ -1,37 +1,20 @@
-<div id="enrolment" class="tab-pane fade">
-<br>
 <div class="panel panel-info">
     <div class="panel-heading">Cohort Enrollments</div>
     <div class="panel-body">
 		<table class="table">
 		  <thead>
 		    <tr>
-		      <th scope="col">#</th>
 		      <th scope="col">Cohort</th>
 		      <th scope="col">Total Enrolled</th>
 		    </tr>
 		  </thead>
 		  <tbody>
+		  	{% for cohort, total in cohort_report.items %}
 		    <tr>
-		      <th scope="row">1</th>
-		      <td>Cohort A</td>
-		      <td>10</td>
+		      <td>{{ cohort }}</td>
+		      <td>{{ total }}</td>
 		    </tr>
-		    <tr>
-		      <th scope="row">2</th>
-		      <td>Cohort B</td>
-		      <td>2</td>
-		    </tr>
-		    <tr>
-		      <th scope="row">3</th>
-		      <td>Cohort C</td>
-		      <td>12</td>
-		    </tr>
-		    <tr>
-		      <th scope="row">4</th>
-		      <td>Secondary Aims</td>
-		      <td>23</td>
-		    </tr>
+		    {% endfor %}
 		  </tbody>
 		</table>
     </div>
@@ -52,5 +35,3 @@
 	    </aside> <!-- col.// -->
 
 	</div>
-
-</div>

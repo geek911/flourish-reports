@@ -27,21 +27,7 @@
 
 {% block main %}
 <div class="container">
-	<h2>Flourish Reports</h2>
-	<p>Select a tab for the report you want.</p>
-	
-	<ul class="nav nav-tabs">
-		<li class="active"><a data-toggle="tab" href="#recruitment">Recruitment</a></li>
-	    <li><a data-toggle="tab" href="#management">Management</a></li>
-	    <li><a data-toggle="tab" href="#enrolment">Enrolments</a></li>
-	    <li><a data-toggle="tab" href="#lab">Lab</a></li>
-	</ul>
-	
-	<div class="tab-content">
-		{% include "flourish_reports/recruitment.html" %}
-		{% include "flourish_reports/management.html" %}
-		{% include "flourish_reports/enrolment/enrolment.html" %}
-		{% include "flourish_reports/lab.html" %}
-	</div>
+	<h2>Enrolment Reports</h2>
+	{% include "flourish_reports/enrolment/enrolment.html" %}
 </div>
 {% endblock main %}

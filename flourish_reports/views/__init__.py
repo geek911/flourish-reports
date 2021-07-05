@@ -1,1 +1,2 @@
-from .home_view import HomeView
+from .enrolment.enrolment_reports import EnrolmentReportView
+from .recruitment.recruitment_reports import RecruitmentReportView

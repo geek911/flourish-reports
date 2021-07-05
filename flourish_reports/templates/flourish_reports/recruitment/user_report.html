@@ -1,0 +1,41 @@
+{% load crispy_forms_tags %}
+<div class="panel panel-info">
+	<div class="panel-heading">
+		{% csrf_token %}
+		<span class="pull-right">{% crispy form %}</span>
+		<h4>Recruiter Recruitment Report</h4>
+	</div>
+	<div class="panel-body">
+		<table class="table table-hover">
+			<thead>
+				<tr>
+			        <th>Staff Member</th>
+			        <th>Total contacted</th>
+			        <th>Total successful calls</th>
+			        <th>Total unsuccessful calls</th>
+			        <th>Total participants accepting</th>
+			        <th>Conversion</th>
+			        <th>Conversion %</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for r in recruitment.1 %}
+				<tr>
+					{% for v in r %}
+					<td>{{v}}</td>
+					{% endfor %}
+				</tr>
+				{% endfor %}
+				<tr>
+			        <td><b>Totals </b></td>
+			        <td><b>{{ recruitment.0.0 }}</b></td>
+			        <td><b>{{ recruitment.0.1 }}</b></td>
+			        <td><b>{{ recruitment.0.2 }}</b></td>
+			        <td><b>{{ recruitment.0.3 }}</b></td>
+			        <td><b>{{ recruitment.0.4 }}</b></td>
+			        <td><b></b></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
