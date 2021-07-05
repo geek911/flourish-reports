@@ -28,6 +28,9 @@
 {% block main %}
 <div class="container">
 	<h2>Enrolment Reports</h2>
+		{% csrf_token %}
+		{% crispy form %}
+		<br>
 	{% include "flourish_reports/enrolment/enrolment.html" %}
 </div>
 {% endblock main %}
