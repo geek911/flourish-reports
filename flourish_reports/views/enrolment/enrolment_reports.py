@@ -1,10 +1,9 @@
 from collections import Counter
-
+from django.apps import apps as django_apps
 from django_pandas.io import read_frame
 from django.db.models import Q
 
 import pandas as pd
-
 
 from django.contrib.auth.decorators import login_required
 from django.urls.base import reverse
@@ -21,11 +20,14 @@ from ...models import ExportFile
 from ..view_mixins import DownloadReportMixin
 
 from flourish_follow.models import LogEntry
-from flourish_caregiver.models import CaregiverChildConsent    
+from flourish_caregiver.models import CaregiverChildConsent
 
 
 class EnrolmentReportMixin:
 
+    child_consents_cls = django_apps.get_model('flourish_caregiver.caregiverchildconsent')
+    maternal_dataset_cls = django_apps.get_model('flourish_caregiver.maternaldataset')
+    child_dataset_cls = django_apps.get_model('flourish_child.childdataset')
 
     def cohort_report(self, start_date=None, end_date=None):
         """Return a total enrolment per cohort.
@@ -50,47 +52,121 @@ class EnrolmentReportMixin:
             'cohort_pool': 'Cohort Pool'
             }
         for key, value in cohorts.items():
-            new_key = c_dict[key]
-            report[new_key] = value
+            if key:
+                new_key = c_dict[key]
+                report[new_key] = value
         return sorted(report)
 
     def cohort_a(self, start_date=None, end_date=None):
         """Returns totals for cohort A.
         """
+        cohort_a_identifiers = self.child_consents_cls.objects.filter(
+            cohort='cohort_a').values_list(
+                'subject_consent__screening_identifier')
+
+        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
+            'study_maternal_identifier', flat=True).filter(
+                screening_identifier__in=cohort_a_identifiers)
+
+        heu_count = self.child_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            infant_hiv_exposed='Exposed').count()
+
+        huu_count = self.child_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            infant_hiv_exposed='Unexposed').count()
+
+        ante_enrol_cls = django_apps.get_model('flourish_caregiver.antenatalenrollment')
+        ante_enrol_count = ante_enrol_cls.objects.all().count()
+
         cohort_a_dict = {
-            'preg_woman': 1,
-            'HEU': 3,
-            'HUU': 1
+            'preg_woman': ante_enrol_count,
+            'HEU': heu_count,
+            'HUU': huu_count
             }
         return cohort_a_dict
 
     def cohort_b(self, start_date=None, end_date=None):
-        """Returns totals for cohort A.
+        """Returns totals for cohort B.
         """
-        cohort_a_dict = {
-            'EFV': 1,
-            'DTG': 3,
-            'HIV-Preg': 1
+
+        cohort_a_identifiers = self.child_consents_cls.objects.filter(
+            cohort='cohort_b').values_list(
+                'subject_consent__screening_identifier')
+
+        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
+            'study_maternal_identifier', flat=True).filter(
+                screening_identifier__in=cohort_a_identifiers)
+
+        preg_efv_count = self.maternal_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            preg_efv=1).count()
+
+        preg_dtg_count = self.maternal_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            preg_dtg=1).count()
+
+        hiv_preg_count = self.maternal_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            mom_hivstatus='HIV-infected').count()
+
+        cohort_b_dict = {
+            'EFV': preg_efv_count,
+            'DTG': preg_dtg_count,
+            'HIV-Preg': hiv_preg_count
             }
-        return cohort_a_dict
+        return cohort_b_dict
 
     def cohort_c(self, start_date=None, end_date=None):
-        """Returns totals for cohort A.
+        """Returns totals for cohort C.
         """
-        cohort_a_dict = {
-            'HUU': 1,
-            'PI': 3,
+
+        cohort_c_identifiers = self.child_consents_cls.objects.filter(
+            cohort='cohort_b').values_list(
+                'subject_consent__screening_identifier')
+
+        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
+            'study_maternal_identifier', flat=True).filter(
+                screening_identifier__in=cohort_c_identifiers)
+
+        huu_count = self.child_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            infant_hiv_exposed='Unexposed').count()
+
+        preg_pi_count = self.maternal_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            preg_pi=1).count()
+
+        cohort_c_dict = {
+            'HUU': huu_count,
+            'PI': preg_pi_count,
             }
-        return cohort_a_dict
-    
+        return cohort_c_dict
+
     def sec_aims(self, start_date=None, end_date=None):
-        """Returns totals for cohort A.
+        """Returns totals for Secondary Aims.
         """
-        cohort_a_dict = {
-            'WLHIV': 1,
-            'HIV -': 1
+        cohort_sec_identifiers = self.child_consents_cls.objects.filter(
+            cohort__icontains='sec').values_list(
+                'subject_consent__screening_identifier')
+
+        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
+            'study_maternal_identifier', flat=True).filter(
+                screening_identifier__in=cohort_sec_identifiers)
+
+        hiv_preg_count = self.maternal_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            mom_hivstatus='HIV-infected').count()
+
+        hiv_neg_preg_count = self.maternal_dataset_cls.objects.filter(
+            study_maternal_identifier__in=study_maternal_identifiers,
+            mom_hivstatus='HIV-uninfected').count()
+
+        cohort_sec_dict = {
+            'WLHIV': hiv_preg_count,
+            'HIV -': hiv_neg_preg_count
             }
-        return cohort_a_dict
+        return cohort_sec_dict
 
 
 class EnrolmentReportView(
@@ -149,14 +225,14 @@ class EnrolmentReportView(
         context = super().get_context_data(**kwargs)
         enrolment_downloads = ExportFile.objects.filter(
             description='Enrolment Report').order_by('uploaded_at')
-        
+
         # Enrolment report
         cohort_report = self.cohort_report()
         cohort_a = self.cohort_a()
         cohort_b = self.cohort_b()
         cohort_c = self.cohort_c()
         sec_aims = self.sec_aims()
-        
+
         context.update(
             enrolment_downloads=enrolment_downloads,
             cohort_report=cohort_report,
