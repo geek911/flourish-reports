@@ -18,7 +18,7 @@ class EnrolmentReportForm(forms.Form):
         self.helper = FormHelper()
         self.helper.form_method = 'POST'
         self.helper.form_id = 'enrolment_report'
-        self.helper.form_action = 'flourish_reports:home_url'
+        self.helper.form_action = 'flourish_reports:enrolment_report_url'
         self.helper.form_class = 'form-inline'
         self.helper.field_template = 'bootstrap3/layout/inline_field.html'
         self.helper.layout = Layout(

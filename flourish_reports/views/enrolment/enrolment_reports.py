@@ -54,6 +54,44 @@ class EnrolmentReportMixin:
             report[new_key] = value
         return sorted(report)
 
+    def cohort_a(self, start_date=None, end_date=None):
+        """Returns totals for cohort A.
+        """
+        cohort_a_dict = {
+            'preg_woman': 1,
+            'HEU': 3,
+            'HUU': 1
+            }
+        return cohort_a_dict
+
+    def cohort_b(self, start_date=None, end_date=None):
+        """Returns totals for cohort A.
+        """
+        cohort_a_dict = {
+            'EFV': 1,
+            'DTG': 3,
+            'HIV-Preg': 1
+            }
+        return cohort_a_dict
+
+    def cohort_c(self, start_date=None, end_date=None):
+        """Returns totals for cohort A.
+        """
+        cohort_a_dict = {
+            'HUU': 1,
+            'PI': 3,
+            }
+        return cohort_a_dict
+    
+    def sec_aims(self, start_date=None, end_date=None):
+        """Returns totals for cohort A.
+        """
+        cohort_a_dict = {
+            'WLHIV': 1,
+            'HIV -': 1
+            }
+        return cohort_a_dict
+
 
 class EnrolmentReportView(
         DownloadReportMixin, EnrolmentReportMixin,
@@ -73,6 +111,21 @@ class EnrolmentReportView(
             start_date = form.data['start_date']
             end_date = form.data['end_date']
             data = []
+            cohort_report = self.cohort_report(
+                start_date=start_date,
+                end_date=end_date)
+            cohort_a = self.cohort_a(
+                start_date=start_date,
+                end_date=end_date)
+            cohort_b = self.cohort_b(
+                start_date=start_date,
+                end_date=end_date)
+            cohort_c = self.cohort_c(
+                start_date=start_date,
+                end_date=end_date)
+            sec_aims = self.sec_aims(
+                start_date=start_date,
+                end_date=end_date)
             if 'rdownload_report' in self.request.POST:
                 self.download_data(
                     description='Enrolment Report',
@@ -84,6 +137,11 @@ class EnrolmentReportView(
             context = self.get_context_data(**self.kwargs)
             context.update(
                 enrolment_downloads=enrolment_downloads,
+                cohort_report=cohort_report,
+                cohort_a=cohort_a,
+                cohort_b=cohort_b,
+                cohort_c=cohort_c,
+                sec_aims=sec_aims,
                 form=form)
         return self.render_to_response(context)
 
@@ -94,10 +152,18 @@ class EnrolmentReportView(
         
         # Enrolment report
         cohort_report = self.cohort_report()
+        cohort_a = self.cohort_a()
+        cohort_b = self.cohort_b()
+        cohort_c = self.cohort_c()
+        sec_aims = self.sec_aims()
         
         context.update(
             enrolment_downloads=enrolment_downloads,
-            cohort_report=cohort_report)
+            cohort_report=cohort_report,
+            cohort_a=cohort_a,
+            cohort_b=cohort_b,
+            cohort_c=cohort_c,
+            sec_aims=sec_aims)
         return context
 
     @method_decorator(login_required)

@@ -11,9 +11,9 @@
 		  </thead>
 		  <tbody>
 		    <tr>
-		      <td>0</td>
-		      <td>0</td>
-		      <td>0</td>
+		    {% for key, value in cohort_a.items %}
+		      <td>{{ value }}</td>
+		    {% endfor %}
 		    </tr>
 		  </tbody>
 		</table>
