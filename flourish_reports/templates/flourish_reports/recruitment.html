@@ -3,45 +3,4 @@
 	<br>
 	{% include "flourish_reports/recruitment/user_report.html" %}
 	{% include "flourish_reports/recruitment/prev_study_report.html" %}
-{% if recruitment_downloads %}
-	<div class="panel panel-info">
-		<div class="panel-heading">
-			<h4>Recruitment Report Downloads</h4>
-		</div>
-		<div class="panel-body">
-		<table id="item-identifiers" class="table table-striped table-bordered" cellspacing="0" width="100%">
-			<thead>
-				<tr>
-					<th>Export identifier</th>
-					<th>Document</th>
-					<th>Report data range</th>
-					<th>Datetime generated</th>
-				</tr>
-			</thead>
-			<tfoot>
-				<tr>
-					<th>Export identifier</th>
-					<th>Document</th>
-					<th>Report data range</th>
-					<th>Datetime generated</th>
-				</tr>
-			</tfoot>
-			<tbody>
-			{% for download in recruitment_downloads %}
-				<tr>
-					<td>{{ download.export_identifier }}</td>
-			 		<td>
-			 			{% if download.document.url %}
-			 				<a href={{ download.file_url }}><i class="fa fa-download fa-sm"></i> file download</a>
-			 			{% endif %}
-			 		</td>
-			 		<td>{{ download.start_date }} & {{ download.end_date }}</td>
-			 		<td>{{ download.uploaded_at }}</td>
-				</tr>
-			{% endfor %}
-			</tbody>
-		</table>
-	</div>
-</div>
-{% endif %}
 </div>

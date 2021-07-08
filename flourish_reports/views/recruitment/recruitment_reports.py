@@ -34,6 +34,7 @@ class RecruitmentReportView(
         return reverse('flourish_reports:recruitment_report_url')
 
     def form_valid(self, form):
+        prev_study_form = PrevStudyRecruitmentReportForm()
         if form.is_valid():
             start_date = form.data['start_date']
             end_date = form.data['end_date']
@@ -49,10 +50,14 @@ class RecruitmentReportView(
                     df=pd.DataFrame(data))
             recruitment_downloads = ExportFile.objects.filter(
                 description='Recruitment Productivity Report').order_by('uploaded_at')
+            study_downloads = ExportFile.objects.filter(
+            description='Study Productivity Report').order_by('uploaded_at')
             context = self.get_context_data(**self.kwargs)
             context.update(
                 recruitment_downloads=recruitment_downloads,
+                study_downloads=study_downloads,
                 form=form,
+                prev_study_form=prev_study_form,
                 recruitment=recruitment)
         return self.render_to_response(context)
 
@@ -60,6 +65,8 @@ class RecruitmentReportView(
         context = super().get_context_data(**kwargs)
         recruitment_downloads = ExportFile.objects.filter(
             description='Recruitment Productivity Report').order_by('uploaded_at')
+        study_downloads = ExportFile.objects.filter(
+            description='Study Productivity Report').order_by('uploaded_at')
         # Recruitment report
         recruitment = self.recruitment()
 
@@ -71,6 +78,7 @@ class RecruitmentReportView(
         
         context.update(
             recruitment_downloads=recruitment_downloads,
+            study_downloads=study_downloads,
             recruitment=recruitment,
             prev_study_form=prev_study_form)
         return context
