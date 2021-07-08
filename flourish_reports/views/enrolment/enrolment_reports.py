@@ -1,4 +1,6 @@
 from collections import Counter
+from collections import OrderedDict
+
 from django.apps import apps as django_apps
 from django_pandas.io import read_frame
 from django.db.models import Q
@@ -29,7 +31,7 @@ class EnrolmentReportMixin:
     maternal_dataset_cls = django_apps.get_model('flourish_caregiver.maternaldataset')
     child_dataset_cls = django_apps.get_model('flourish_child.childdataset')
 
-    def cohort_report(self, start_date=None, end_date=None):
+    def all_cohort_report(self, start_date=None, end_date=None):
         """Return a total enrolment per cohort.
         """
         if start_date and end_date:
@@ -55,7 +57,7 @@ class EnrolmentReportMixin:
             if key:
                 new_key = c_dict[key]
                 report[new_key] = value
-        return sorted(report)
+        return dict(OrderedDict(sorted(report.items())))
 
     def cohort_a(self, start_date=None, end_date=None):
         """Returns totals for cohort A.
@@ -227,7 +229,6 @@ class EnrolmentReportView(
             description='Enrolment Report').order_by('uploaded_at')
 
         # Enrolment report
-        cohort_report = self.cohort_report()
         cohort_a = self.cohort_a()
         cohort_b = self.cohort_b()
         cohort_c = self.cohort_c()
@@ -235,7 +236,7 @@ class EnrolmentReportView(
 
         context.update(
             enrolment_downloads=enrolment_downloads,
-            cohort_report=cohort_report,
+            cohort_report=self.all_cohort_report(),
             cohort_a=cohort_a,
             cohort_b=cohort_b,
             cohort_c=cohort_c,
