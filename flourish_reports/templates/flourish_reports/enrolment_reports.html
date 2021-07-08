@@ -10,7 +10,9 @@
 	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
 	<script type="text/javascript">
 	$(document).ready(function() {
-	    $('#item-identifiers').DataTable();
+	    $('#missing-crfs').DataTable({
+	    	"ordering": false
+	    });
 	} );
 	</script>
 
