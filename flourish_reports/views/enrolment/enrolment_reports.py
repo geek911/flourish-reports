@@ -2,8 +2,6 @@ from collections import Counter
 from collections import OrderedDict
 
 from django.apps import apps as django_apps
-from django_pandas.io import read_frame
-from django.utils.safestring import mark_safe
 
 import pandas as pd
 
@@ -30,7 +28,6 @@ class EnrolmentReportMixin:
     child_consents_cls = django_apps.get_model('flourish_caregiver.caregiverchildconsent')
     maternal_dataset_cls = django_apps.get_model('flourish_caregiver.maternaldataset')
     child_dataset_cls = django_apps.get_model('flourish_child.childdataset')
-    registered_subject_cls = django_apps.get_model('edc_registration.registeredsubject')
 
     def all_cohort_report(self, start_date=None, end_date=None):
         """Return a total enrolment per cohort.
@@ -171,30 +168,6 @@ class EnrolmentReportMixin:
             }
         return cohort_sec_dict
 
-    def subject_crfs_missing(self):
-        crfmetadata = django_apps.get_model('edc_metadata.crfmetadata')
-        registered_identifiers = self.registered_subject_cls.objects.all().values_list(
-            'subject_identifier', flat=True)
-        required_crfs = crfmetadata.objects.filter(
-            subject_identifier__in=registered_identifiers, entry_status='REQUIRED')
-        data = [(qs.subject_identifier, qs.schedule_name, qs.visit_code,
-                 qs.visit_code_sequence, qs.verbose_name) for qs in required_crfs]
-        df = pd.DataFrame.from_records(
-            data,
-            columns=['Subject Identifier', 'Schedule Name', 'Visit Code', 'Timepoint', 'CRF name'])
-        if not df.empty:
-            grouped = df.groupby(['Subject Identifier', 'Schedule Name',
-                                  'Visit Code', 'Timepoint'])
-            grouped = grouped['CRF name'].apply(
-                lambda group_series: group_series.tolist()).reset_index()
-            groups_html = grouped.to_html()
-            groups_html = groups_html.replace(
-                '<table border="1" class="dataframe">',
-                '<table id="missing-crfs" class="table table-striped table-bordered"'
-                'cellspacing="0" width="100%">')
-            return groups_html
-        return 'No missing forms'
-
 
 class EnrolmentReportView(
         DownloadReportMixin, EnrolmentReportMixin,
@@ -258,7 +231,6 @@ class EnrolmentReportView(
         cohort_b = self.cohort_b()
         cohort_c = self.cohort_c()
         sec_aims = self.sec_aims()
-        subject_crfs_missing = self.subject_crfs_missing()
 
         context.update(
             enrolment_downloads=enrolment_downloads,
@@ -266,8 +238,7 @@ class EnrolmentReportView(
             cohort_a=cohort_a,
             cohort_b=cohort_b,
             cohort_c=cohort_c,
-            sec_aims=sec_aims,
-            subject_crfs_missing=mark_safe(subject_crfs_missing))
+            sec_aims=sec_aims,)
         return context
 
     @method_decorator(login_required)

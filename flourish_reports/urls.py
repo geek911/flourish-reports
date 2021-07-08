@@ -16,7 +16,8 @@ Including another URLconf
 from django.urls import path
 
 from .admin_site import flourish_reports_admin
-from .views import EnrolmentReportView, RecruitmentReportView
+from .views import (
+    EnrolmentReportView, MissingCRFsReportView, RecruitmentReportView)
 
 
 app_name = 'flourish_reports'
@@ -25,4 +26,5 @@ urlpatterns = [
     path('admin/', flourish_reports_admin.urls),
     path('recruitment', RecruitmentReportView.as_view(), name='recruitment_report_url'),
     path('enrolment', EnrolmentReportView.as_view(), name='enrolment_report_url'),
+    path('missingcrfs', MissingCRFsReportView.as_view(), name='missing_crfs_report_url'),
 ]
