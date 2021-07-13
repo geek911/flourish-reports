@@ -87,7 +87,9 @@ class MissingCRFsReportView(
         subject_crfs_missing = self.df_to_html(subject_crfs_missing)
 
         missing_crfs_file = ExportFile.objects.filter(
-            description='Missing CRFs Report').latest('created')
+            description='Missing CRFs Report')
+        if missing_crfs_file:
+            missing_crfs_file = missing_crfs_file.latest('created')
 
         context.update(
             subject_crfs_missing=mark_safe(subject_crfs_missing),
