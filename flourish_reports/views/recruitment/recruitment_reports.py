@@ -18,8 +18,6 @@ from ..view_mixins import DownloadReportMixin
 from .user_recruitment_report_mixin import UserRecruitmentReportMixin
 
 
-
-
 class RecruitmentReportView(
         DownloadReportMixin, UserRecruitmentReportMixin,
         EdcBaseViewMixin, NavbarViewMixin,
@@ -51,7 +49,7 @@ class RecruitmentReportView(
             recruitment_downloads = ExportFile.objects.filter(
                 description='Recruitment Productivity Report').order_by('uploaded_at')
             study_downloads = ExportFile.objects.filter(
-            description='Study Productivity Report').order_by('uploaded_at')
+                description='Study Productivity Report').order_by('uploaded_at')
             context = self.get_context_data(**self.kwargs)
             context.update(
                 recruitment_downloads=recruitment_downloads,
@@ -75,7 +73,7 @@ class RecruitmentReportView(
             prev_study_form = PrevStudyRecruitmentReportForm(self.request.POST)
             if prev_study_form.is_valid():
                 pre_study = prev_study_form.data['pre_study']
-        
+
         context.update(
             recruitment_downloads=recruitment_downloads,
             study_downloads=study_downloads,
