@@ -20,22 +20,13 @@
 				</tr>
 			</thead>
 			<tbody>
-				{% for r in pre_study_recruitment.1 %}
+				{% for value in prev_study_report %}
 				<tr>
-					{% for v in r %}
+					{% for v in value %}
 					<td>{{v}}</td>
 					{% endfor %}
 				</tr>
 				{% endfor %}
-				<tr>
-			        <td><b>Totals </b></td>
-			        <td><b>{{ pre_study_recruitment.0.0 }}</b></td>
-			        <td><b>{{ pre_study_recruitment.0.1 }}</b></td>
-			        <td><b>{{ pre_study_recruitment.0.2 }}</b></td>
-			        <td><b>{{ pre_study_recruitment.0.3 }}</b></td>
-			        <td><b>{{ pre_study_recruitment.0.4 }}</b></td>
-			        <td><b></b></td>
-				</tr>
 			</tbody>
 		</table>
 	</div>

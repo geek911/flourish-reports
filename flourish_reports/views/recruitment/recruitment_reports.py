@@ -16,14 +16,15 @@ from ...forms import PrevStudyRecruitmentReportForm, RecruitmentReportForm
 from ...models import ExportFile
 from ..view_mixins import DownloadReportMixin
 from .user_recruitment_report_mixin import UserRecruitmentReportMixin
+from .prev_study_recruitment_report import PrevStudyRecruitmentReportMixin
 
 
 
 
 class RecruitmentReportView(
         DownloadReportMixin, UserRecruitmentReportMixin,
-        EdcBaseViewMixin, NavbarViewMixin,
-        TemplateView, FormView):
+        PrevStudyRecruitmentReportMixin, EdcBaseViewMixin,
+        NavbarViewMixin, TemplateView, FormView):
 
     form_class = RecruitmentReportForm
     template_name = 'flourish_reports/recruitment_reports.html'
@@ -71,15 +72,22 @@ class RecruitmentReportView(
         recruitment = self.recruitment()
 
         prev_study_form = PrevStudyRecruitmentReportForm()
+        prev_study_report = self.report_data()
         if self.request.method == 'POST':
             prev_study_form = PrevStudyRecruitmentReportForm(self.request.POST)
             if prev_study_form.is_valid():
-                pre_study = prev_study_form.data['pre_study']
-        
+                prev_study = prev_study_form.data['prev_study']
+                start_date = prev_study_form.data['start_date']
+                end_date = prev_study_form.data['end_date']
+                prev_study_report = self.report_data(
+                    prev_study=prev_study,
+                    start_date=start_date,
+                    end_date=end_date)
         context.update(
             recruitment_downloads=recruitment_downloads,
             study_downloads=study_downloads,
             recruitment=recruitment,
+            prev_study_report=prev_study_report,
             prev_study_form=prev_study_form)
         return context
 

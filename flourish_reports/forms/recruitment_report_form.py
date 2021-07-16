@@ -26,7 +26,7 @@ class RecruitmentReportForm(forms.Form):
         self.helper = FormHelper()
         self.helper.form_method = 'POST'
         self.helper.form_id = 'recruitment_report'
-        self.helper.form_action = 'flourish_reports:home_url'
+        self.helper.form_action = 'flourish_reports:recruitment_report_url'
         self.helper.form_class = 'form-inline'
         self.helper.field_template = 'bootstrap3/layout/inline_field.html'
         self.helper.layout = Layout(
@@ -74,7 +74,7 @@ class RecruitmentReportForm(forms.Form):
 
 class PrevStudyRecruitmentReportForm(forms.Form):
 
-    pre_study = forms.ChoiceField(
+    prev_study = forms.ChoiceField(
         required=True, label='Prev Study',
         widget=forms.Select())
 
@@ -87,15 +87,15 @@ class PrevStudyRecruitmentReportForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['pre_study'].choices = self.prev_studies
+        self.fields['prev_study'].choices = self.prev_studies
         self.helper = FormHelper()
         self.helper.form_method = 'POST'
         self.helper.form_id = 'recruitment_report'
-        self.helper.form_action = 'flourish_reports:home_url'
+        self.helper.form_action = 'flourish_reports:recruitment_report_url'
         self.helper.form_class = 'form-inline'
         self.helper.field_template = 'bootstrap3/layout/inline_field.html'
         self.helper.layout = Layout(
-            'pre_study',
+            'prev_study',
             'start_date',
             'end_date',
             Submit('submit', u'filter report', css_class="btn btn-sm btn-default"),
