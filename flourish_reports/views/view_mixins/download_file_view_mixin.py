@@ -8,7 +8,7 @@ from ...models import ExportFile
 
 
 class DownloadReportMixin:
-    
+
     def download_data(
             self, description=None, start_date=None,
             end_date=None, report_type=None, df=None):
@@ -23,14 +23,14 @@ class DownloadReportMixin:
             'end_date': end_date
         }
         doc = ExportFile.objects.create(**options)
-        
+
         # Document path
         upload_to = ExportFile.document.field.upload_to
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         fname = export_identifier + '_' + timestamp + '.csv'
         final_path = upload_to  + report_type +'/' + fname
-         
-        # Export path 
+
+        # Export path
         export_path = settings.MEDIA_ROOT + '/documents/' + report_type +'/'
         if not os.path.exists(export_path):
             os.makedirs(export_path)

@@ -50,15 +50,9 @@ class MissingCRFsReportView(
         if not df.empty:
             grouped = df.groupby(['Subject Identifier', 'Schedule Name',
                                   'Visit Code', 'Timepoint'])
-            grouped = grouped['CRF name'].apply(
+            return grouped['CRF name'].apply(
                 lambda group_series: group_series.tolist()).reset_index()
-            groups_html = grouped.to_html()
-            groups_html = groups_html.replace(
-                '<table border="1" class="dataframe">',
-                '<table id="missing-crfs" class="table table-striped table-bordered"'
-                'cellspacing="0" width="100%">')
-            return groups_html
-        return 'No missing forms'
+        return df
 
     def get_success_url(self):
         return reverse('flourish_reports:missing_crfs_report_url')
@@ -70,13 +64,15 @@ class MissingCRFsReportView(
             subject_crfs_missing = self.subject_crfs_missing(
                 start_date=start_date,
                 end_date=end_date)
-            data = []
             if 'rdownload_report' in self.request.POST:
                 self.download_data(
                     description='Missing CRFs Report',
                     start_date=start_date, end_date=end_date,
                     report_type='missing_crfs_reports',
-                    df=pd.DataFrame(data))
+                    df=pd.DataFrame(subject_crfs_missing))
+
+            subject_crfs_missing = self.df_to_html(subject_crfs_missing)
+
             context = self.get_context_data(**self.kwargs)
             context.update(
                 subject_crfs_missing=mark_safe(subject_crfs_missing),
@@ -85,16 +81,30 @@ class MissingCRFsReportView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        enrolment_downloads = ExportFile.objects.filter(
-            description='Missing CRFs Report').order_by('uploaded_at')
 
         # Report
         subject_crfs_missing = self.subject_crfs_missing()
+        subject_crfs_missing = self.df_to_html(subject_crfs_missing)
+
+        missing_crfs_file = ExportFile.objects.filter(
+            description='Missing CRFs Report')
+        if missing_crfs_file:
+            missing_crfs_file = missing_crfs_file.latest('created')
 
         context.update(
-            enrolment_downloads=enrolment_downloads,
-            subject_crfs_missing=mark_safe(subject_crfs_missing))
+            subject_crfs_missing=mark_safe(subject_crfs_missing),
+            missing_crfs_file=missing_crfs_file)
         return context
+
+    def df_to_html(self, df=None):
+        groups_html = 'No missing CRFs'
+        if not df.empty:
+            groups_html = df.to_html()
+            groups_html = groups_html.replace(
+                '<table border="1" class="dataframe">',
+                '<table id="missing-crfs" class="table table-striped table-bordered"'
+                'cellspacing="0" width="100%">')
+        return groups_html
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
