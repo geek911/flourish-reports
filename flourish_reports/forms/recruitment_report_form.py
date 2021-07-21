@@ -90,7 +90,7 @@ class PrevStudyRecruitmentReportForm(forms.Form):
         self.fields['prev_study'].choices = self.prev_studies
         self.helper = FormHelper()
         self.helper.form_method = 'POST'
-        self.helper.form_id = 'recruitment_report'
+        self.helper.form_id = 'prev_recruitment_report'
         self.helper.form_action = 'flourish_reports:recruitment_report_url'
         self.helper.form_class = 'form-inline'
         self.helper.field_template = 'bootstrap3/layout/inline_field.html'
