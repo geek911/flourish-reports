@@ -5,6 +5,7 @@ from django.conf import settings
 
 from ...identifiers import ExportIdentifier
 from ...models import ExportFile
+from django.core.files.storage import FileSystemStorage
 
 
 class DownloadReportMixin:
@@ -12,30 +13,37 @@ class DownloadReportMixin:
     def download_data(
             self, description=None, start_date=None,
             end_date=None, report_type=None, df=None):
-        """Export all data.
+        """
+        This method is for saving files which will be later be
+        downloaded by the user
+        """
+
+        """
+        Preparing to upload the file
         """
         export_identifier = ExportIdentifier().identifier
-
-        options = {
-            'description': description,
-            'export_identifier': export_identifier,
-            'start_date': start_date,
-            'end_date': end_date
-        }
-        doc = ExportFile.objects.create(**options)
-
-        # Document path
-        upload_to = ExportFile.document.field.upload_to
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-        fname = export_identifier + '_' + timestamp + '.csv'
-        final_path = upload_to  + report_type +'/' + fname
+        documents_folder = 'documents'
+        file_name = f'{export_identifier}_{timestamp}.csv'
+        file_directory = os.path.join(settings.MEDIA_ROOT, documents_folder, report_type)
 
-        # Export path
-        export_path = settings.MEDIA_ROOT + '/documents/' + report_type +'/'
-        if not os.path.exists(export_path):
-            os.makedirs(export_path)
-        export_path += fname
-        df.to_csv(export_path, encoding='utf-8', index=False)
+        """
+        Check if the directory exist
+        """
+        if not os.path.exists(file_directory):
+            os.mkdir(file_directory)
 
-        doc.document = final_path
-        doc.save()
+        final_path = os.path.join(file_directory, file_name)
+
+        df.to_csv(final_path, encoding='utf-8', index=False)
+
+        """
+        Now save the actual path after exporting the data
+        """
+        export_file = ExportFile()
+        export_file.export_identifier = export_identifier
+        export_file.start_date = start_date
+        export_file.end_date = end_date
+        export_file.description = report_type
+        export_file.document = os.path.join(documents_folder, report_type, file_name)
+        export_file.save()
