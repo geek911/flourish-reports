@@ -170,9 +170,9 @@ class EnrolmentReportMixin:
 
 
 class EnrolmentReportView(
-    DownloadReportMixin, EnrolmentReportMixin,
-    EdcBaseViewMixin, NavbarViewMixin,
-    TemplateView, FormView):
+        DownloadReportMixin, EnrolmentReportMixin,
+        EdcBaseViewMixin, NavbarViewMixin,
+        TemplateView, FormView):
     form_class = EnrolmentReportForm
     template_name = 'flourish_reports/enrolment_reports.html'
     navbar_name = 'flourish_reports'
@@ -264,7 +264,7 @@ class EnrolmentReportView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         enrolment_downloads = ExportFile.objects.filter(
-            description='Enrolment Report').order_by('uploaded_at')
+            description='enrolment_reports').order_by('uploaded_at')
 
         # Enrolment report
         cohort_a = self.cohort_a()
