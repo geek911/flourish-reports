@@ -35,7 +35,17 @@ class DownloadReportMixin:
 
         final_path = os.path.join(file_directory, file_name)
 
-        df.to_csv(final_path, encoding='utf-8', index=False)
+        """
+        If dataframes are passed as a list this section merges 
+        the df into one single file
+        """
+        if type(df) == list:
+            for single_df in df:
+                # single_df.transpose()
+                single_df.transpose().to_csv(final_path, mode='a', index=False)
+
+        else:
+            df.to_csv(final_path, encoding='utf-8', index=False)
 
         """
         Now save the actual path after exporting the data
