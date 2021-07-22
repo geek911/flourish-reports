@@ -1,36 +1,40 @@
 <div class="panel panel-info">
-    <div class="panel-heading">Cohort Enrollments</div>
-    <div class="panel-body">
-		<table class="table">
-		  <thead>
-		    <tr>
-		      <th scope="col">Cohort</th>
-		      <th scope="col">Total Enrolled</th>
-		    </tr>
-		  </thead>
-		  <tbody>
-		  	{% for cohort, total in cohort_report.items %}
-		    <tr>
-		      <td>{{ cohort }}</td>
-		      <td>{{ total }}</td>
-		    </tr>
-		    {% endfor %}
-		  </tbody>
-		</table>
-    </div>
+  <div class="panel-heading">Cohort Enrollments</div>
+  <div class="panel-body">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Cohort</th>
+          <th scope="col">Total Enrolled</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cohort, total in cohort_report.items %}
+        <tr>
+          <td>{{ cohort }}</td>
+          <td>{{ total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
-<br>
+<br />
 <div class="row">
-	<aside class="col-sm-6">
-		{% include "flourish_reports/enrolment/cohort_a.html" %}
-    </aside> <!-- col.// -->
-    <aside class="col-sm-6">
-		{% include "flourish_reports/enrolment/cohort_b.html" %}
-    </aside> <!-- col.// -->
-    <aside class="col-sm-6">
-		{% include "flourish_reports/enrolment/cohort_c.html" %}
-    </aside> <!-- col.// -->
-    <aside class="col-sm-6">
-		{% include "flourish_reports/enrolment/secondary_aims.html" %}
-    </aside> <!-- col.// -->
+  <aside class="col-sm-6">
+    {% include "flourish_reports/enrolment/cohort_a.html" %}
+  </aside>
+  <!-- col.// -->
+  <aside class="col-sm-6">
+    {% include "flourish_reports/enrolment/cohort_b.html" %}
+  </aside>
+  <!-- col.// -->
+  <aside class="col-sm-6">
+    {% include "flourish_reports/enrolment/cohort_c.html" %}
+  </aside>
+  <!-- col.// -->
+  <aside class="col-sm-6">
+    {% include "flourish_reports/enrolment/secondary_aims.html" %}
+  </aside>
+  <!-- col.// -->
 </div>
