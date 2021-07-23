@@ -45,6 +45,7 @@ class RecruitmentReportView(
             data = recruitment[1] + totals
             if 'rdownload_report' in self.request.POST:
                 report_data = self.recruitment(username=username, start_date=start_date, end_date=end_date)
+                report_data = report_data[1] + [['Totals'] + report_data[0]]
                 self.download_data(
                     description='Recruitment Productivity Report',
                     start_date=start_date, end_date=end_date,
