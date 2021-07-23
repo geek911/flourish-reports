@@ -170,9 +170,9 @@ class EnrolmentReportMixin:
 
 
 class EnrolmentReportView(
-        DownloadReportMixin, EnrolmentReportMixin,
-        EdcBaseViewMixin, NavbarViewMixin,
-        TemplateView, FormView):
+    DownloadReportMixin, EnrolmentReportMixin,
+    EdcBaseViewMixin, NavbarViewMixin,
+    TemplateView, FormView):
     form_class = EnrolmentReportForm
     template_name = 'flourish_reports/enrolment_reports.html'
     navbar_name = 'flourish_reports'
@@ -182,34 +182,38 @@ class EnrolmentReportView(
         return reverse('flourish_reports:enrolment_report_url')
 
     def form_valid(self, form):
+
         if form.is_valid():
+
             start_date = form.data['start_date']
             end_date = form.data['end_date']
 
             cohort_report = self.all_cohort_report(
                 start_date=start_date,
                 end_date=end_date)
-            df1 = pandas.DataFrame(cohort_report, index=[0])
+
+            df1 = pandas.DataFrame(list(cohort_report.items()))
 
             cohort_a = self.cohort_a(
                 start_date=start_date,
                 end_date=end_date)
-            df2 = pandas.DataFrame(cohort_a, index=[1])
+
+            df2 = pandas.DataFrame(list(cohort_a.items()))
 
             cohort_b = self.cohort_b(
                 start_date=start_date,
                 end_date=end_date)
-            df3 = pandas.DataFrame(cohort_b, index=[2])
+            df3 = pandas.DataFrame(list(cohort_b.items()))
 
             cohort_c = self.cohort_c(
                 start_date=start_date,
                 end_date=end_date)
-            df4 = pandas.DataFrame(cohort_c, index=[3])
+            df4 = pandas.DataFrame(list(cohort_c.items()))
 
             sec_aims = self.sec_aims(
                 start_date=start_date,
                 end_date=end_date)
-            df5 = pandas.DataFrame(sec_aims, index=[4])
+            df5 = pandas.DataFrame(list(sec_aims.items()))
 
             df = [
                 df1,
@@ -219,33 +223,20 @@ class EnrolmentReportView(
                 df5
             ]
 
-            # data.extend([cohort_report, cohort_a, cohort_b, cohort_c, sec_aims])
-
             if 'rdownload_report' in self.request.POST:
+                data = [
+                    {"All Cohort Reports": cohort_report.values()},
+                    {"Cohort A": [value for value in cohort_a.values()]},
+                    {"Cohort B": [value for value in cohort_b.values()]},
+                    {"Cohort C": [value for value in cohort_c.values()]},
+                    {"Secondary Aims": [value for value in sec_aims.values()]},
+                ]
+
                 self.download_data(
                     description='Cohort Report',
                     start_date=start_date, end_date=end_date,
                     report_type='enrolment_reports',
-                    # df=pd.DataFrame.from_dict(data, orient='index').fillna(0).transpose())
                     df=df)
-
-                # self.download_data(
-                #     description='Cohort A Report',
-                #     start_date=start_date, end_date=end_date,
-                #     report_type='enrolment_reports',
-                #     df=pd.DataFrame([cohort_a]))
-                #
-                # self.download_data(
-                #     description='Cohort B Report',
-                #     start_date=start_date, end_date=end_date,
-                #     report_type='enrolment_reports',
-                #     df=pd.DataFrame([cohort_b]))
-                #
-                # self.download_data(
-                #     description='Cohort C Report',
-                #     start_date=start_date, end_date=end_date,
-                #     report_type='enrolment_reports',
-                #     df=pd.DataFrame([cohort_c]))
 
             enrolment_downloads = ExportFile.objects.filter(
                 description='enrolment_reports').order_by('uploaded_at')
