@@ -192,28 +192,28 @@ class EnrolmentReportView(
                 start_date=start_date,
                 end_date=end_date)
 
-            df1 = pandas.DataFrame(list(cohort_report.items()))
+            df1 = pandas.DataFrame(list(cohort_report.items()), columns=['Cohort Enrollments', 'Qty'])
 
             cohort_a = self.cohort_a(
                 start_date=start_date,
                 end_date=end_date)
 
-            df2 = pandas.DataFrame(list(cohort_a.items()))
+            df2 = pandas.DataFrame(list(cohort_a.items()), columns = ['Cohort A', 'Qty'])
 
             cohort_b = self.cohort_b(
                 start_date=start_date,
                 end_date=end_date)
-            df3 = pandas.DataFrame(list(cohort_b.items()))
+            df3 = pandas.DataFrame(list(cohort_b.items()), columns=['Cohort B', 'Qty'])
 
             cohort_c = self.cohort_c(
                 start_date=start_date,
                 end_date=end_date)
-            df4 = pandas.DataFrame(list(cohort_c.items()))
+            df4 = pandas.DataFrame(list(cohort_c.items()), columns = ['Cohort C', 'Qty'])
 
             sec_aims = self.sec_aims(
                 start_date=start_date,
                 end_date=end_date)
-            df5 = pandas.DataFrame(list(sec_aims.items()))
+            df5 = pandas.DataFrame(list(sec_aims.items()), columns = ['Secondary Aims', 'Qty'])
 
             df = [
                 df1,
