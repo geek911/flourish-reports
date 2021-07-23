@@ -19,6 +19,7 @@ from .user_recruitment_report_mixin import UserRecruitmentReportMixin
 from .prev_study_recruitment_report import PrevStudyRecruitmentReportMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+
 class RecruitmentReportView(
     DownloadReportMixin, UserRecruitmentReportMixin,
     PrevStudyRecruitmentReportMixin, EdcBaseViewMixin,
@@ -46,11 +47,20 @@ class RecruitmentReportView(
             if 'rdownload_report' in self.request.POST:
                 report_data = self.recruitment(username=username, start_date=start_date, end_date=end_date)
                 report_data = report_data[1] + [['Totals'] + report_data[0]]
+                columns = [
+                    'Staff Member',
+                    'Total Contacted',
+                    'Total Successful Calls',
+                    'Total Unsuccessful Calls',
+                    'Total Participants Accepting',
+                    'Conversion',
+                    'Conversion %',
+                ]
                 self.download_data(
                     description='Recruitment Productivity Report',
                     start_date=start_date, end_date=end_date,
                     report_type='recruitment_productivity_reports',
-                    df=pd.DataFrame(report_data))
+                    df=pd.DataFrame(report_data, columns=columns))
             recruitment_downloads = ExportFile.objects.filter(
                 description='recruitment_productivity_reports').order_by('uploaded_at')
             study_downloads = ExportFile.objects.filter(
@@ -64,8 +74,6 @@ class RecruitmentReportView(
                 prev_study_form=prev_study_form,
                 recruitment=recruitment)
         return self.render_to_response(context)
-
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -89,11 +97,22 @@ class RecruitmentReportView(
                     start_date=start_date,
                     end_date=end_date)
                 if 'rdownload_report' in self.request.POST:
+
+                    columns = [
+                        'Previous Study',
+                        'Attempts',
+                        'Pending',
+                        'Unable To Reach',
+                        'Decline/Uninterested',
+                        'Thinking',
+                        'Consented',
+                    ]
+
                     self.download_data(
                         description='Study Productivity Report',
                         start_date=start_date, end_date=end_date,
                         report_type='study_productivity_reports',
-                        df=pd.DataFrame(prev_study_report))
+                        df=pd.DataFrame(prev_study_report, columns=columns))
         context.update(
             recruitment_downloads=recruitment_downloads,
             study_downloads=study_downloads,
