@@ -93,7 +93,7 @@ class RecruitmentReportView(
                         description='Study Productivity Report',
                         start_date=start_date, end_date=end_date,
                         report_type='study_productivity_reports',
-                        df=pd.DataFrame(prev_study_report[1]))
+                        df=pd.DataFrame(prev_study_report))
         context.update(
             recruitment_downloads=recruitment_downloads,
             study_downloads=study_downloads,
