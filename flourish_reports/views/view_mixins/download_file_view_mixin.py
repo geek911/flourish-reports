@@ -42,7 +42,7 @@ class DownloadReportMixin:
         if type(df) == list:
             for single_df in df:
                 # single_df.transpose()
-                single_df.transpose().to_csv(final_path, mode='a', index=False)
+                single_df.to_csv(final_path, mode='a', index=True)
 
         else:
             df.to_csv(final_path, encoding='utf-8', index=False)
