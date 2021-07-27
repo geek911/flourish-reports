@@ -34,12 +34,12 @@ class MissingCRFsReportView(
         crfmetadata = django_apps.get_model('edc_metadata.crfmetadata')
         if start_date and end_date:
             registered_identifiers = self.registered_subject_cls.objects.filter(
-                created__date__gte=start_date,
-                created__date__lte=end_date).values_list(
+                created__gte=start_date,
+                created__lte=end_date).values_list(
                     'subject_identifier', flat=True)
         else:
             registered_identifiers = self.registered_subject_cls.objects.all(
-                ).values_list('subject_identifier', flat=True)
+            ).values_list('subject_identifier', flat=True)
         required_crfs = crfmetadata.objects.filter(
             subject_identifier__in=registered_identifiers, entry_status='REQUIRED')
         data = [(qs.subject_identifier, qs.schedule_name, qs.visit_code,
@@ -59,19 +59,29 @@ class MissingCRFsReportView(
 
     def form_valid(self, form):
         if form.is_valid():
+
             start_date = form.data['start_date']
+
             end_date = form.data['end_date']
-            subject_crfs_missing = self.subject_crfs_missing(
+
+            df = self.subject_crfs_missing(
                 start_date=start_date,
                 end_date=end_date)
+
+            if not df.empty:
+                # df.latest('created')
+                # df.sort_values(by=['created'])
+                pass
+
             if 'rdownload_report' in self.request.POST:
+
                 self.download_data(
                     description='Missing CRFs Report',
                     start_date=start_date, end_date=end_date,
                     report_type='missing_crfs_reports',
-                    df=pd.DataFrame(subject_crfs_missing))
+                    df=df)
 
-            subject_crfs_missing = self.df_to_html(subject_crfs_missing)
+            subject_crfs_missing = self.df_to_html(df)
 
             context = self.get_context_data(**self.kwargs)
             context.update(
@@ -87,9 +97,9 @@ class MissingCRFsReportView(
         subject_crfs_missing = self.df_to_html(subject_crfs_missing)
 
         missing_crfs_file = ExportFile.objects.filter(
-            description='Missing CRFs Report')
+            description='missing_crfs_reports')
         if missing_crfs_file:
-            missing_crfs_file = missing_crfs_file.latest('created')
+            missing_crfs_file = missing_crfs_file.order_by('created')
 
         context.update(
             subject_crfs_missing=mark_safe(subject_crfs_missing),
