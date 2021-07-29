@@ -1,1 +1,3 @@
-from .home_view import HomeView
+from .enrolment.enrolment_reports import EnrolmentReportView
+from .enrolment.missing_crfs_report import MissingCRFsReportView
+from .recruitment.recruitment_reports import RecruitmentReportView

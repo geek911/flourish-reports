@@ -1,0 +1,18 @@
+<div class="panel panel-info">
+    <div class="panel-heading">
+    	Missing CRFs 
+    	{% if missing_crfs_file and missing_crfs_file.document.url %}
+	    	<p class="pull-right">
+	    		Download latest report:
+	    		<a href={{missing_crfs_file.document.url}}>
+	    			 <i class="fa fa-download fa-sm"></i> file download</a>
+	    		</a>
+	    	</p>
+	    {% endif %}
+    </div>
+    <div class="panel-body">
+		{% if subject_crfs_missing %}
+			{{ subject_crfs_missing }}
+		{% endif %}
+    </div>
+</div>

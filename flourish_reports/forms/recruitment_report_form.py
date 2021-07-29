@@ -26,7 +26,7 @@ class RecruitmentReportForm(forms.Form):
         self.helper = FormHelper()
         self.helper.form_method = 'POST'
         self.helper.form_id = 'recruitment_report'
-        self.helper.form_action = 'flourish_reports:home_url'
+        self.helper.form_action = 'flourish_reports:recruitment_report_url'
         self.helper.form_class = 'form-inline'
         self.helper.field_template = 'bootstrap3/layout/inline_field.html'
         self.helper.layout = Layout(
@@ -41,7 +41,7 @@ class RecruitmentReportForm(forms.Form):
     def assign_users(self):
         """Reurn a list of users that can be assigned an issue.
         """
-        assignable_users_choices = (('-----', '-----'),)
+        assignable_users_choices = (('-----', 'All'),)
         user = django_apps.get_model('auth.user')
         app_config = django_apps.get_app_config('flourish_reports')
         assignable_users_group = app_config.assignable_users_group
@@ -68,4 +68,49 @@ class RecruitmentReportForm(forms.Form):
             assignable_users_choices += ((username, full_name),)
         if extra_choices:
             assignable_users_choices += extra_choices
+        return assignable_users_choices
+
+
+
+class PrevStudyRecruitmentReportForm(forms.Form):
+
+    prev_study = forms.ChoiceField(
+        required=True, label='Prev Study',
+        widget=forms.Select())
+
+    start_date = forms.DateField(
+        required=True, label='Start date',
+        widget=forms.TextInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(
+        required=True, label='End date',
+        widget=forms.TextInput(attrs={'type': 'date'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['prev_study'].choices = self.prev_studies
+        self.helper = FormHelper()
+        self.helper.form_method = 'POST'
+        self.helper.form_id = 'prev_recruitment_report'
+        self.helper.form_action = 'flourish_reports:recruitment_report_url'
+        self.helper.form_class = 'form-inline'
+        self.helper.field_template = 'bootstrap3/layout/inline_field.html'
+        self.helper.layout = Layout(
+            'prev_study',
+            'start_date',
+            'end_date',
+            Submit('submit', u'filter report', css_class="btn btn-sm btn-default"),
+            Submit('rdownload_report', u'download report', css_class="btn btn-sm btn-default"),
+        )
+
+    @property
+    def prev_studies(self):
+        """Reurn a list of users that can be assigned an issue.
+        """
+        assignable_users_choices = (
+            ('-----', 'All'),
+            ('mashi', 'Mashi'),
+            ('mmabana', 'Mma Bana'),
+            ('mpepu', 'Mpepu'),
+            ('tshipidi', 'Tshipidi'),
+            ('tshilo dikotla', 'Tshilo Dikotla'),)
         return assignable_users_choices
