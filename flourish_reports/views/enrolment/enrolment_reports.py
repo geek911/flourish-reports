@@ -7,6 +7,7 @@ from django.apps import apps as django_apps
 import pandas as pd
 
 from django.contrib.auth.decorators import login_required
+from django.db.models import QuerySet
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
@@ -31,29 +32,20 @@ class EnrolmentReportMixin:
     def all_cohort_report(self, start_date=None, end_date=None):
         """Return a total enrolment per cohort.
         """
+        consents: QuerySet = None
+
         if start_date and end_date:
             consents = CaregiverChildConsent.objects.filter(
                 created__gte=start_date,
-                created__lte=end_date).values_list(
-                'cohort', flat=True)
+                created__lte=end_date)
         else:
-            consents = CaregiverChildConsent.objects.all().values_list(
-                'cohort', flat=True)
-
-        reports_totals = {
-            'Cohort A': 0,
-            'Cohort A Secondary Aims': 0,
-            'Cohort B': 0,
-            'Cohort B Secondary Aims': 0,
-            'Cohort C': 0,
-            'Cohort C Secondary Aims': 0,
-        }
+            consents = CaregiverChildConsent.objects.all()
 
         # get cohort secondary aims
 
-        reports_totals['Cohort A Secondary Aims'] = CaregiverChildConsent.objects.filter(cohort='cohort_a_sec').count()
-        reports_totals['Cohort B Secondary Aims'] = CaregiverChildConsent.objects.filter(cohort='cohort_b_sec').count()
-        reports_totals['Cohort C Secondary Aims'] = CaregiverChildConsent.objects.filter(cohort='cohort_c_sec').count()
+        reports_totals = {'Cohort A': 0, 'Cohort A Secondary Aims': consents.filter(cohort='cohort_a_sec').count(),
+                          'Cohort B': 0, 'Cohort B Secondary Aims': consents.filter(cohort='cohort_b_sec').count(),
+                          'Cohort C': 0, 'Cohort C Secondary Aims': consents.filter(cohort='cohort_c_sec').count()}
 
         # reusing functions to get the total for each cohort
 
