@@ -105,10 +105,14 @@ class PrevStudyRecruitmentReportMixin:
 
         # Call logs
         identifiers = []
+
+        if prev_study is None:
+            identifiers = LogEntry.objects.filter(
+                phone_num_success=['none_of_the_above']).values_list(
+                'study_maternal_identifier', flat=True)
         if prev_study:
             if prev_study == '-----':
                 identifiers = LogEntry.objects.filter(
-                    created__range=[start_date, end_date],
                     phone_num_success=['none_of_the_above']).values_list(
                     'study_maternal_identifier', flat=True)
             else:
@@ -117,7 +121,7 @@ class PrevStudyRecruitmentReportMixin:
                     created__range=[start_date, end_date],
                     phone_num_success=['none_of_the_above']).values_list(
                     'study_maternal_identifier', flat=True)
-        identifiers = list(set(identifiers))
+        identifiers = list(identifiers)
         # In contact attempts
         qs = InPersonContactAttempt.objects.filter(
             study_maternal_identifier__in=identifiers,
@@ -152,17 +156,29 @@ class PrevStudyRecruitmentReportMixin:
             'Mashi',
             'Tshilo Dikotla',
             'Tshipidi']
+
         qs = LogEntry.objects.filter(may_call='No')
-        if prev_study:
-            qs = LogEntry.objects.filter(
-                prev_study=prev_study,
-                created__range=[start_date, end_date],
-                may_call='No')
-        elif prev_study == '-----':
-            qs = LogEntry.objects.filter(
-                created__range=[start_date, end_date],
-                may_call='No')
+
+        if prev_study is None or prev_study == '-----':
+            if start_date and prev_study:
+                qs = LogEntry.objects.filter(
+                    created__range=[start_date, end_date],
+                    may_call='No')
+            else:
+                qs = LogEntry.objects.filter(may_call='No')
+        else:
+            if start_date and prev_study:
+                qs = LogEntry.objects.filter(
+                    prev_study=prev_study,
+                    created__range=[start_date, end_date],
+                    may_call='No')
+            else:
+                qs = LogEntry.objects.filter(
+                    prev_study=prev_study,
+                    may_call='No')
+
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
+
         df = df.drop_duplicates(subset=['study_maternal_identifier'])
 
         prev_study_list = []
@@ -214,7 +230,7 @@ class PrevStudyRecruitmentReportMixin:
                 qs = LogEntry.objects.filter(
                     prev_study=prev_study,
                     created__range=[start_date, end_date],
-                    appt='thinking')
+                    appt__iexact='thinking')
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
         df = df.drop_duplicates(subset=['study_maternal_identifier'])
 

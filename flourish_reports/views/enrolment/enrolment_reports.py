@@ -152,7 +152,7 @@ class EnrolmentReportMixin:
         """Returns totals for Secondary Aims.
         """
         cohort_sec_identifiers = self.child_consents_cls.objects.filter(
-            cohort__icontains='sec').values_list(
+            cohort__icontains='_sec').values_list(
             'subject_consent__screening_identifier')
 
         study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
