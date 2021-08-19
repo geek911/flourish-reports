@@ -152,12 +152,11 @@ class EnrolmentReportMixin:
         """Returns totals for Secondary Aims.
         """
         cohort_sec_identifiers = self.child_consents_cls.objects.filter(
-            cohort__icontains='_sec').values_list(
-            'subject_consent__screening_identifier')
+            cohort__icontains='_sec').values_list('study_child_identifier')
 
-        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
+        study_maternal_identifiers = self.child_dataset_cls.objects.values_list(
             'study_maternal_identifier', flat=True).filter(
-            screening_identifier__in=cohort_sec_identifiers)
+            study_child_identifier__in=cohort_sec_identifiers)
 
         hiv_preg_count = self.maternal_dataset_cls.objects.filter(
             study_maternal_identifier__in=study_maternal_identifiers,
