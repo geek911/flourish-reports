@@ -151,7 +151,7 @@ class UserRecruitmentReportMixin:
                 conversion = self.conversion_calls(
                     username, start_date=start_date, end_date=end_date)
                 if conversion:
-                    conversion_percentage = (conversion / call_contacted) * 100
+                    conversion_percentage = (conversion / successful) * 100
                 else:
                     conversion_percentage = 0
                 report.append(
@@ -175,7 +175,7 @@ class UserRecruitmentReportMixin:
                 accepting = self.accepting_apps(username)
                 conversion = self.conversion_calls(username)
                 if conversion:
-                    conversion_percentage = (conversion / call_contacted) * 100
+                    conversion_percentage = (conversion / successful) * 100
                 else:
                     conversion_percentage = 0
                 report.append(
