@@ -21,15 +21,13 @@ class UserRecruitmentReportMixin:
             call_contacted = LogEntry.objects.filter(
                 user_created=username,
                 created__gte=start_date,
-                created__lte=end_date).values_list(
-                'study_maternal_identifier').count()
+                created__lte=end_date).count()
 
             # import pdb;
             # pdb.set_trace()
         else:
             call_contacted = LogEntry.objects.filter(
-                user_created=username).values_list(
-                'study_maternal_identifier').count()
+                user_created=username).count()
         return call_contacted
 
     def successful_calls(self, username, start_date=None, end_date=None):
