@@ -41,13 +41,13 @@ class UserRecruitmentReportMixin:
                 created__gte=start_date,
                 created__lte=end_date,
                 phone_num_success__isnull=False).values_list(
-                'study_maternal_identifier').values_list('study_maternal_identifier').count()
+                'study_maternal_identifier').distinct().count()
         else:
             successful = LogEntry.objects.filter(
                 ~Q(phone_num_success=['none_of_the_above']),
                 user_created=username,
                 phone_num_success__isnull=False, ).values_list(
-                'study_maternal_identifier').values_list('study_maternal_identifier').count()
+                'study_maternal_identifier').distinct().count()
         return successful
 
     def unsuccessful_calls(self, username, start_date=None, end_date=None):
