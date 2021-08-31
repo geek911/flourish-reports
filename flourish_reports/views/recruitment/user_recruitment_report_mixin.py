@@ -163,7 +163,7 @@ class UserRecruitmentReportMixin:
                      unsuccessful,
                      accepting,
                      conversion,
-                     round(conversion_percentage, 3)])
+                     round(conversion_percentage, 1)])
                 # Update totals
                 t_contacted += call_contacted
                 t_successful += successful
