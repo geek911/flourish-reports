@@ -1,9 +1,9 @@
 from functools import reduce
 
 from django_pandas.io import read_frame
-
+from django.db.models import Q
 from flourish_caregiver.models import MaternalDataset, SubjectConsent
-from flourish_follow.models import LogEntry, InPersonContactAttempt, WorkList
+from flourish_follow.models import LogEntry, InPersonContactAttempt, WorkList, LogEntry
 
 
 def merge(lst1, lst2):
@@ -106,10 +106,9 @@ class PrevStudyRecruitmentReportMixin:
         # Call logs
         identifiers = []
 
-        if prev_study is None:
-            identifiers = LogEntry.objects.filter(
-                phone_num_success=['none_of_the_above']).values_list(
-                'study_maternal_identifier', flat=True)
+        identifiers = LogEntry.objects.filter(
+            phone_num_success=['none_of_the_above']).values_list(
+            'study_maternal_identifier', flat=True)
         if prev_study:
             if prev_study == '-----':
                 identifiers = LogEntry.objects.filter(
@@ -121,11 +120,10 @@ class PrevStudyRecruitmentReportMixin:
                     created__range=[start_date, end_date],
                     phone_num_success=['none_of_the_above']).values_list(
                     'study_maternal_identifier', flat=True)
-        identifiers = list(identifiers)
+        # identifiers = list(identifiers)
         # In contact attempts
         qs = InPersonContactAttempt.objects.filter(
-            study_maternal_identifier__in=identifiers,
-            successful_location=['none_of_the_above'])
+            Q(study_maternal_identifier__in=identifiers) | Q(successful_location=['none_of_the_above']))
         if prev_study:
             if prev_study == '-----':
                 qs = InPersonContactAttempt.objects.filter(
@@ -157,25 +155,28 @@ class PrevStudyRecruitmentReportMixin:
             'Tshilo Dikotla',
             'Tshipidi']
 
-        qs = LogEntry.objects.filter(may_call='No')
+        qs = LogEntry.objects.filter(Q(may_call__iexact='No') | Q(appt__iexact='No'))
 
         if prev_study is None or prev_study == '-----':
             if start_date and prev_study:
                 qs = LogEntry.objects.filter(
+                    Q(may_call__iexact='No') | Q(appt__iexact='No'),
                     created__range=[start_date, end_date],
-                    may_call='No')
+                )
             else:
-                qs = LogEntry.objects.filter(may_call='No')
+                qs = LogEntry.objects.filter(Q(may_call__iexact='No') | Q(appt__iexact='No'))
         else:
             if start_date and prev_study:
                 qs = LogEntry.objects.filter(
+                    Q(may_call__iexact='No') | Q(appt__iexact='No'),
                     prev_study=prev_study,
                     created__range=[start_date, end_date],
-                    may_call='No')
+                )
             else:
                 qs = LogEntry.objects.filter(
+                    Q(may_call__iexact='No') | Q(appt__iexact='No'),
                     prev_study=prev_study,
-                    may_call='No')
+                )
 
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
 
@@ -220,12 +221,12 @@ class PrevStudyRecruitmentReportMixin:
             'Mashi',
             'Tshilo Dikotla',
             'Tshipidi']
-        qs = LogEntry.objects.filter(appt='thinking')
+        qs = LogEntry.objects.filter(appt__iexact='thinking')
         if prev_study:
             if prev_study == '-----':
                 qs = LogEntry.objects.filter(
                     created__range=[start_date, end_date],
-                    appt='thinking')
+                    appt__iexact='thinking')
             else:
                 qs = LogEntry.objects.filter(
                     prev_study=prev_study,
