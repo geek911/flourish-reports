@@ -104,38 +104,37 @@ class PrevStudyRecruitmentReportMixin:
             'Tshipidi']
 
         # Call logs
-        identifiers = []
+        # identifiers = []
 
-        identifiers = LogEntry.objects.filter(
-            phone_num_success=['none_of_the_above']).values_list(
-            'study_maternal_identifier', flat=True)
+        qs = LogEntry.objects.filter(
+            phone_num_success=['none_of_the_above'])
+
         if prev_study:
             if prev_study == '-----':
-                identifiers = LogEntry.objects.filter(
-                    phone_num_success=['none_of_the_above']).values_list(
-                    'study_maternal_identifier', flat=True)
+                qs = LogEntry.objects.filter(
+                    phone_num_success=['none_of_the_above'])
             else:
-                identifiers = LogEntry.objects.filter(
+                qs = LogEntry.objects.filter(
                     prev_study=prev_study,
                     created__range=[start_date, end_date],
-                    phone_num_success=['none_of_the_above']).values_list(
-                    'study_maternal_identifier', flat=True)
+                    phone_num_success=['none_of_the_above'])
         # identifiers = list(identifiers)
         # In contact attempts
-        qs = InPersonContactAttempt.objects.filter(
-            Q(study_maternal_identifier__in=identifiers) | Q(successful_location=['none_of_the_above']))
-        if prev_study:
-            if prev_study == '-----':
-                qs = InPersonContactAttempt.objects.filter(
-                    study_maternal_identifier__in=identifiers,
-                    created__range=[start_date, end_date],
-                    successful_location=['none_of_the_above'])
-            else:
-                qs = InPersonContactAttempt.objects.filter(
-                    study_maternal_identifier__in=identifiers,
-                    prev_study=prev_study,
-                    created__range=[start_date, end_date],
-                    successful_location=['none_of_the_above'])
+        # qs = InPersonContactAttempt.objects.filter(
+        #     Q(study_maternal_identifier__in=identifiers) | Q(successful_location=['none_of_the_above']))
+        # if prev_study:
+        #     if prev_study == '-----':
+        #         qs = InPersonContactAttempt.objects.filter(
+        #             study_maternal_identifier__in=identifiers,
+        #             created__range=[start_date, end_date],
+        #             successful_location=['none_of_the_above'])
+        #     else:
+        #         qs = InPersonContactAttempt.objects.filter(
+        #             study_maternal_identifier__in=identifiers,
+        #             prev_study=prev_study,
+        #             created__range=[start_date, end_date],
+        #             successful_location=['none_of_the_above'])
+
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
         df = df.drop_duplicates(subset=['study_maternal_identifier'])
 
