@@ -21,15 +21,13 @@ class UserRecruitmentReportMixin:
             call_contacted = LogEntry.objects.filter(
                 user_created=username,
                 created__gte=start_date,
-                created__lte=end_date).values_list(
-                'study_maternal_identifier').distinct().count()
+                created__lte=end_date).values_list('study_maternal_identifier').distinct().count()
 
             # import pdb;
             # pdb.set_trace()
         else:
             call_contacted = LogEntry.objects.filter(
-                user_created=username).values_list(
-                'study_maternal_identifier').distinct().count()
+                user_created=username).values_list('study_maternal_identifier').distinct().count()
         return call_contacted
 
     def successful_calls(self, username, start_date=None, end_date=None):
@@ -55,30 +53,10 @@ class UserRecruitmentReportMixin:
     def unsuccessful_calls(self, username, start_date=None, end_date=None):
         """Returns number of unsuccessful calls.
         """
-        unsuccessful = 0
-        if start_date and end_date:
 
-            unsuccessful = LogEntry.objects.filter(
-                Q(phone_num_success__isnull=True) | Q(phone_num_success=['none_of_the_above']),
-                user_created=username,
-                created__gte=start_date,
-                created__lte=end_date).values_list(
-                'study_maternal_identifier').distinct().count()
+        unsuccessful = self.calls_contacted(username=username, start_date=start_date, end_date=end_date) \
+                       - self.successful_calls(username=username, start_date=start_date, end_date=end_date)
 
-
-
-            test = LogEntry.objects.filter(
-                user_created=username,
-                phone_num_success=['none_of_the_above'],
-                created__gte=start_date,
-                created__lte=end_date)
-
-
-        else:
-            unsuccessful = LogEntry.objects.filter(
-                Q(phone_num_success__isnull=True) | Q(phone_num_success=['none_of_the_above']),
-                user_created=username).values_list(
-                'study_maternal_identifier').distinct().count()
         return unsuccessful
 
     def accepting_apps(self, username, start_date=None, end_date=None):
@@ -91,7 +69,7 @@ class UserRecruitmentReportMixin:
                 user_created=username,
                 created__gte=start_date,
                 created__lte=end_date, ).values_list(
-                'study_maternal_identifier').distinct().count()
+                'study_maternal_identifier').distict().count()
         else:
             accepting = LogEntry.objects.filter(
                 Q(appt_date__isnull=False) | Q(appt='Yes'),
@@ -151,7 +129,7 @@ class UserRecruitmentReportMixin:
                 conversion = self.conversion_calls(
                     username, start_date=start_date, end_date=end_date)
                 if conversion:
-                    conversion_percentage = (conversion / call_contacted) * 100
+                    conversion_percentage = (conversion / successful) * 100
                 else:
                     conversion_percentage = 0
                 report.append(
@@ -175,7 +153,7 @@ class UserRecruitmentReportMixin:
                 accepting = self.accepting_apps(username)
                 conversion = self.conversion_calls(username)
                 if conversion:
-                    conversion_percentage = (conversion / call_contacted) * 100
+                    conversion_percentage = (conversion / successful) * 100
                 else:
                     conversion_percentage = 0
                 report.append(
@@ -185,7 +163,7 @@ class UserRecruitmentReportMixin:
                      unsuccessful,
                      accepting,
                      conversion,
-                     conversion_percentage])
+                     round(conversion_percentage, 1)])
                 # Update totals
                 t_contacted += call_contacted
                 t_successful += successful

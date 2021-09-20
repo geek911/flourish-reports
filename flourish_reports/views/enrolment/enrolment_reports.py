@@ -7,11 +7,11 @@ from django.apps import apps as django_apps
 import pandas as pd
 
 from django.contrib.auth.decorators import login_required
+from django.db.models import QuerySet
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
-
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
 
@@ -21,7 +21,7 @@ from ...models import ExportFile
 from ..view_mixins import DownloadReportMixin
 
 from flourish_follow.models import LogEntry
-from flourish_caregiver.models import CaregiverChildConsent
+from flourish_caregiver.models import *
 
 
 class EnrolmentReportMixin:
@@ -32,30 +32,35 @@ class EnrolmentReportMixin:
     def all_cohort_report(self, start_date=None, end_date=None):
         """Return a total enrolment per cohort.
         """
+        consents: QuerySet = None
+
         if start_date and end_date:
             consents = CaregiverChildConsent.objects.filter(
                 created__gte=start_date,
-                created__lte=end_date).values_list(
-                'cohort', flat=True)
+                created__lte=end_date)
         else:
-            consents = CaregiverChildConsent.objects.all().values_list(
-                'cohort', flat=True)
-        cohorts = Counter(consents)
-        report = {}
-        c_dict = {
-            'cohort_a': 'Cohort A',
-            'cohort_b': 'Cohort B',
-            'cohort_c': 'Cohort C',
-            'cohort_a_sec': 'Cohort A Secondary Aims',
-            'cohort_b_sec': 'Cohort B Secondary Aims',
-            'cohort_c_sec': 'Cohort C Secondary Aims',
-            'cohort_pool': 'Cohort Pool'
-        }
-        for key, value in cohorts.items():
-            if key:
-                new_key = c_dict[key]
-                report[new_key] = value
-        return dict(OrderedDict(sorted(report.items())))
+            consents = CaregiverChildConsent.objects.all()
+
+        # get cohort secondary aims
+
+        reports_totals = {'Cohort A': 0, 'Cohort A Secondary Aims': consents.filter(cohort='cohort_a_sec').count(),
+                          'Cohort B': 0, 'Cohort B Secondary Aims': consents.filter(cohort='cohort_b_sec').count(),
+                          'Cohort C': 0, 'Cohort C Secondary Aims': consents.filter(cohort='cohort_c_sec').count()}
+
+        # reusing functions to get the total for each cohort
+
+        for value in self.cohort_a().values():
+            reports_totals['Cohort A'] += value
+
+        for value in self.cohort_b().values():
+            reports_totals['Cohort B'] += value
+
+        for value in self.cohort_c().values():
+            reports_totals['Cohort C'] += value
+
+        # reports_totals['Cohort A Secondary Aims'] = consents.
+
+        return reports_totals
 
     def cohort_a(self, start_date=None, end_date=None):
         """Returns totals for cohort A.
@@ -64,7 +69,7 @@ class EnrolmentReportMixin:
             cohort='cohort_a').values_list(
             'subject_consent__screening_identifier')
 
-        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
+        study_maternal_identifiers = MaternalDataset.objects.values_list(
             'study_maternal_identifier', flat=True).filter(
             screening_identifier__in=cohort_a_identifiers)
 
@@ -90,13 +95,13 @@ class EnrolmentReportMixin:
         """Returns totals for cohort B.
         """
 
-        cohort_a_identifiers = self.child_consents_cls.objects.filter(
+        cohort_b_identifiers = self.child_consents_cls.objects.filter(
             cohort='cohort_b').values_list(
-            'subject_consent__screening_identifier')
+            'subject_consent__screening_identifier', flat=True)
 
         study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
             'study_maternal_identifier', flat=True).filter(
-            screening_identifier__in=cohort_a_identifiers)
+            screening_identifier__in=cohort_b_identifiers)
 
         preg_efv_count = self.maternal_dataset_cls.objects.filter(
             study_maternal_identifier__in=study_maternal_identifiers,
@@ -106,14 +111,14 @@ class EnrolmentReportMixin:
             study_maternal_identifier__in=study_maternal_identifiers,
             preg_dtg=1).count()
 
-        hiv_preg_count = self.maternal_dataset_cls.objects.filter(
+        hiv_neg_preg_count = self.maternal_dataset_cls.objects.filter(
             study_maternal_identifier__in=study_maternal_identifiers,
-            mom_hivstatus='HIV-infected').count()
+            mom_hivstatus='HIV-uninfected').count()
 
         cohort_b_dict = {
             'EFV': preg_efv_count,
             'DTG': preg_dtg_count,
-            'HIV-Preg': hiv_preg_count
+            'HIV-Preg': hiv_neg_preg_count
         }
         return cohort_b_dict
 
@@ -147,12 +152,11 @@ class EnrolmentReportMixin:
         """Returns totals for Secondary Aims.
         """
         cohort_sec_identifiers = self.child_consents_cls.objects.filter(
-            cohort__icontains='sec').values_list(
-            'subject_consent__screening_identifier')
+            cohort__icontains='_sec').values_list('study_child_identifier')
 
-        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
+        study_maternal_identifiers = self.child_dataset_cls.objects.values_list(
             'study_maternal_identifier', flat=True).filter(
-            screening_identifier__in=cohort_sec_identifiers)
+            study_child_identifier__in=cohort_sec_identifiers)
 
         hiv_preg_count = self.maternal_dataset_cls.objects.filter(
             study_maternal_identifier__in=study_maternal_identifiers,
@@ -198,7 +202,7 @@ class EnrolmentReportView(
                 start_date=start_date,
                 end_date=end_date)
 
-            df2 = pandas.DataFrame(list(cohort_a.items()), columns = ['Cohort A', 'Qty'])
+            df2 = pandas.DataFrame(list(cohort_a.items()), columns=['Cohort A', 'Qty'])
 
             cohort_b = self.cohort_b(
                 start_date=start_date,
@@ -208,12 +212,12 @@ class EnrolmentReportView(
             cohort_c = self.cohort_c(
                 start_date=start_date,
                 end_date=end_date)
-            df4 = pandas.DataFrame(list(cohort_c.items()), columns = ['Cohort C', 'Qty'])
+            df4 = pandas.DataFrame(list(cohort_c.items()), columns=['Cohort C', 'Qty'])
 
             sec_aims = self.sec_aims(
                 start_date=start_date,
                 end_date=end_date)
-            df5 = pandas.DataFrame(list(sec_aims.items()), columns = ['Secondary Aims', 'Qty'])
+            df5 = pandas.DataFrame(list(sec_aims.items()), columns=['Secondary Aims', 'Qty'])
 
             df = [
                 df1,
