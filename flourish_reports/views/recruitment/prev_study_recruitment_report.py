@@ -14,6 +14,33 @@ def merge(lst1, lst2):
 
 class PrevStudyRecruitmentReportMixin:
 
+    def total_partici_onworklist(self, prev_study=None, start_date=None, end_date=None):
+        prev_studies = [
+            'Mpepu',
+            'Mma Bana',
+            'Mashi',
+            'Tshilo Dikotla',
+            'Tshipidi']
+        qs = WorkList.objects.all()
+        if prev_study:
+            if prev_study == '-----':
+                qs = WorkList.objects.filter(
+                    created__range=[start_date, end_date], )
+            else:
+                qs = WorkList.objects.filter(
+                    prev_study=prev_study,
+                    created__range=[start_date, end_date], )
+
+        df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
+
+        df = df.drop_duplicates(subset=['study_maternal_identifier'])
+
+        prev_study_list = []
+        for prev_study in prev_studies:
+            df_prev = df[df['prev_study'] == prev_study]
+            prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
+        return prev_study_list
+
     def attempts(self, prev_study=None, start_date=None, end_date=None):
         """Return number of contacted participants.
         """
@@ -23,11 +50,30 @@ class PrevStudyRecruitmentReportMixin:
             'Mashi',
             'Tshilo Dikotla',
             'Tshipidi']
-        qs = LogEntry.objects.all()
+        qs = WorkList.objects.filter(
+            is_called=True,
+            assigned__isnull=False,
+            called_datetime__isnull=False
+        ).values_list('study_maternal_identifier')
+
+        qs = LogEntry.objects.filter(
+            study_maternal_identifier__in=qs,
+        )
+
         if prev_study:
             if prev_study == '-----':
                 qs = LogEntry.objects.filter(
                     created__range=[start_date, end_date])
+
+                qs = WorkList.objects.filter(
+                    is_called=True,
+                    assigned__isnull=False,
+                    created__range=[start_date, end_date]
+                ).values_list('study_maternal_identifier')
+
+                qs = LogEntry.objects.filter(
+                    study_maternal_identifier__in=qs
+                )
 
             else:
                 qs = LogEntry.objects.filter(
@@ -36,19 +82,19 @@ class PrevStudyRecruitmentReportMixin:
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
         df = df.drop_duplicates(subset=['study_maternal_identifier'])
 
-        qs1 = InPersonContactAttempt.objects.all()
-        if prev_study:
-            if prev_study == '-----':
-                qs1 = InPersonContactAttempt.objects.filter(
-                    created__range=[start_date, end_date])
-            else:
-                qs1 = InPersonContactAttempt.objects.filter(
-                    prev_study=prev_study,
-                    created__range=[start_date, end_date])
-        df1 = read_frame(qs1, fieldnames=['prev_study', 'study_maternal_identifier'])
-        df1 = df1.drop_duplicates(subset=['study_maternal_identifier'])
+        # qs1 = InPersonContactAttempt.objects.all()
+        # if prev_study:
+        #     if prev_study == '-----':
+        #         qs1 = InPersonContactAttempt.objects.filter(
+        #             created__range=[start_date, end_date])
+        #     else:
+        #         qs1 = InPersonContactAttempt.objects.filter(
+        #             prev_study=prev_study,
+        #             created__range=[start_date, end_date])
+        # df1 = read_frame(qs1, fieldnames=['prev_study', 'study_maternal_identifier'])
+        # df1 = df1.drop_duplicates(subset=['study_maternal_identifier'])
 
-        result = df.append(df1)
+        result = df
         result = result.drop_duplicates(subset=['study_maternal_identifier'])
 
         prev_study_list = []
@@ -67,21 +113,52 @@ class PrevStudyRecruitmentReportMixin:
             'Tshilo Dikotla',
             'Tshipidi']
         qs = WorkList.objects.filter(
-            assigned__isnull=False, is_called=False, visited=False)
+            assigned__isnull=False)
         if prev_study:
             if prev_study == '-----':
                 qs = WorkList.objects.filter(
                     created__range=[start_date, end_date],
                     assigned__isnull=False,
-                    is_called=False,
                     visited=False)
             else:
                 qs = WorkList.objects.filter(
                     prev_study=prev_study,
                     created__range=[start_date, end_date],
                     assigned__isnull=False,
-                    is_called=False,
                     visited=False)
+
+        df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
+
+        df = df.drop_duplicates(subset=['study_maternal_identifier'])
+
+        prev_study_list = []
+        for prev_study in prev_studies:
+            df_prev = df[df['prev_study'] == prev_study]
+            prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
+        return prev_study_list
+
+    def non_randomized(self, prev_study=None, start_date=None, end_date=None):
+        """Return number of participants who are randomised but nothing has been done on them.
+        """
+        prev_studies = [
+            'Mpepu',
+            'Mma Bana',
+            'Mashi',
+            'Tshilo Dikotla',
+            'Tshipidi']
+        qs = WorkList.objects.filter(
+            assigned__isnull=True,
+        )
+        if prev_study:
+            if prev_study == '-----':
+                qs = WorkList.objects.filter(
+                    created__range=[start_date, end_date],
+                    assigned__isnull=True, )
+            else:
+                qs = WorkList.objects.filter(
+                    prev_study=prev_study,
+                    assigned__isnull=True,
+                    created__range=[start_date, end_date], )
 
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
 
@@ -106,7 +183,13 @@ class PrevStudyRecruitmentReportMixin:
         # Call logs
         # identifiers = []
 
+        qs = WorkList.objects.filter(
+            is_called=True,
+            assigned__isnull=False,
+        ).values_list('study_maternal_identifier')
+
         qs = LogEntry.objects.filter(
+            study_maternal_identifier__in=qs,
             phone_num_success=['none_of_the_above'])
 
         if prev_study:
@@ -246,7 +329,17 @@ class PrevStudyRecruitmentReportMixin:
         data = []
         if prev_study and start_date and end_date:
             data = [
+                self.total_partici_onworklist(
+                    prev_study=prev_study,
+                    start_date=start_date,
+                    end_date=end_date
+                ),
                 self.attempts(
+                    prev_study=prev_study,
+                    start_date=start_date,
+                    end_date=end_date),
+
+                self.non_randomized(
                     prev_study=prev_study,
                     start_date=start_date,
                     end_date=end_date),
@@ -272,7 +365,13 @@ class PrevStudyRecruitmentReportMixin:
                     end_date=end_date)]
         else:
             data = [
-                self.attempts(), self.pending(), self.unable_to_reach(),
-                self.decline_uninterested(), self.thinking(), self.consented()]
+                self.total_partici_onworklist(),
+                self.non_randomized(),
+                self.pending(),
+                self.attempts(),
+                self.unable_to_reach(),
+                self.decline_uninterested(),
+                self.thinking(),
+                self.consented()]
         result = reduce(merge, data)
         return result
