@@ -279,8 +279,7 @@ class PrevStudyRecruitmentReportMixin:
             study_maternal_identifier__in=identifiers)
         df2 = read_frame(qs1, fieldnames=['protocol', 'study_maternal_identifier'])
         df2 = df2.rename(columns={'protocol': 'prev_study'})
-        if df2:
-            df2 = df2.drop_duplicates(subset=['study_maternal_identifier'])
+        df2 = df2.drop_duplicates(subset=['study_maternal_identifier'])
         
         # Merge frames
         frames = [df1, df2]
