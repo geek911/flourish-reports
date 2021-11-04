@@ -1,8 +1,12 @@
+import pandas as pd
 from functools import reduce
 
 from django_pandas.io import read_frame
 from django.db.models import Q
-from flourish_caregiver.models import MaternalDataset, SubjectConsent
+
+from edc_constants.constants import NO
+
+from flourish_caregiver.models import MaternalDataset, SubjectConsent, ScreeningPriorBhpParticipants
 from flourish_follow.models import LogEntry, InPersonContactAttempt, WorkList, LogEntry
 
 
@@ -260,9 +264,26 @@ class PrevStudyRecruitmentReportMixin:
                     prev_study=prev_study,
                 )
 
-        df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
+        df1 = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
 
-        df = df.drop_duplicates(subset=['study_maternal_identifier'])
+        df1 = df1.drop_duplicates(subset=['study_maternal_identifier'])
+        
+        
+        # Screening rejects
+        identifiers = ScreeningPriorBhpParticipants.objects.filter(
+            flourish_participation=NO).values_list(
+                'study_maternal_identifier', flat=True)
+        identifiers = list(set(identifiers))
+        
+        qs1 = MaternalDataset.objects.filter(
+            study_maternal_identifier__in=identifiers)
+        df2 = read_frame(qs1, fieldnames=['protocol', 'study_maternal_identifier'])
+        df2 = df2.rename(columns={'protocol': 'prev_study'})
+        df2 = df2.drop_duplicates(subset=['study_maternal_identifier'])
+        
+        # Merge frames
+        frames = [df1, df2]
+        df = pd.concat(frames)
 
         prev_study_list = []
         for prev_study in prev_studies:
