@@ -23,14 +23,22 @@
 				</tr>
 			</thead>
 			<tbody>
-				{% for value in prev_study_report %}
+				{% for value in data_report%}
 				<tr>
 					{% for v in value %}
 					<td>{{v}}</td>
 					{% endfor %}
 				</tr>
 				{% endfor %}
-			</tbody>
+
+              <tr>
+                  <td><b>Totals</b></td>
+                  {% for data_total in data_totals %}
+                      <td><b>{{ data_total }}</b></td>
+                  {% endfor %}
+
+              </tr>
+
 		</table>
 	</div>
 </div>

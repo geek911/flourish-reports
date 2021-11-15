@@ -370,10 +370,15 @@ class PrevStudyRecruitmentReportMixin:
             prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
         return prev_study_list
 
+    def total_calculator(self, total, element):
+        total += element
+        return total
+
     def prev_report_data(self, prev_study=None, start_date=None, end_date=None):
         """Return the data for the report.
         """
         data = []
+        total = []
         if prev_study and start_date and end_date:
             data = [
                 self.total_previous_study_participents(
@@ -415,6 +420,9 @@ class PrevStudyRecruitmentReportMixin:
                     prev_study=prev_study,
                     start_date=start_date,
                     end_date=end_date)]
+
+
+
         else:
             data = [
                 self.total_previous_study_participents(),
@@ -426,5 +434,15 @@ class PrevStudyRecruitmentReportMixin:
                 self.decline_uninterested(),
                 self.thinking(),
                 self.consented()]
+        for element in data:
+            total_per_column = 0
+            for study_number in element:
+                total_per_column += study_number[1]
+            total.append(total_per_column)
+        from pprint import pprint; pprint(total)
+
+
         result = reduce(merge, data)
-        return result
+
+
+        return [result, total]

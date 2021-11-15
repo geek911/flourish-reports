@@ -86,6 +86,8 @@ class RecruitmentReportView(
 
         prev_study_form = PrevStudyRecruitmentReportForm()
         prev_study_report = self.prev_report_data()
+        data_report = prev_study_report[0]
+        data_totals = prev_study_report[1]
         if self.request.method == 'POST':
             prev_study_form = PrevStudyRecruitmentReportForm(self.request.POST)
             if prev_study_form.is_valid():
@@ -96,6 +98,10 @@ class RecruitmentReportView(
                     prev_study=prev_study,
                     start_date=start_date,
                     end_date=end_date)
+
+                data_report = prev_study_report[0]
+                data_totals = prev_study_report[1]
+
                 if 'rdownload_report' in self.request.POST:
 
                     columns = [
@@ -117,7 +123,8 @@ class RecruitmentReportView(
             recruitment_downloads=recruitment_downloads,
             study_downloads=study_downloads,
             recruitment=recruitment,
-            prev_study_report=prev_study_report,
+            data_report=data_report,
+            data_totals=data_totals,
             prev_study_form=prev_study_form)
         return context
 
