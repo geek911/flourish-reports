@@ -11,7 +11,8 @@
 			<thead>
 				<tr style="font-size: 9pt">
 			        <th>Prev Study</th>
-			        <th>Total Work <div style="color: blue; font-weight: normal; font-size: 7pt">Total people to be contacted</div></th>
+			        <th>Total Participants<div style="color: blue; font-weight: normal; font-size: 7pt">Previous Study Participants</div></th>
+			        <th>Worklist Participants <div style="color: blue; font-weight: normal; font-size: 7pt">Randomized + Non-randomized</div></th>
                     <th>Non Randomized <div style="color: blue; font-weight: normal; font-size: 7pt">Not yet randomized</div></th>
                     <th>Randomized <div style="color: blue; font-weight: normal; font-size: 7pt">Randomized and pending recruitment</div></th>
 			        <th>Attempts </th>
@@ -22,14 +23,22 @@
 				</tr>
 			</thead>
 			<tbody>
-				{% for value in prev_study_report %}
+				{% for value in data_report%}
 				<tr>
 					{% for v in value %}
 					<td>{{v}}</td>
 					{% endfor %}
 				</tr>
 				{% endfor %}
-			</tbody>
+
+              <tr>
+                  <td><b>Totals</b></td>
+                  {% for data_total in data_totals %}
+                      <td><b>{{ data_total }}</b></td>
+                  {% endfor %}
+
+              </tr>
+
 		</table>
 	</div>
 </div>
