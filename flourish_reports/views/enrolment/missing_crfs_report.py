@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
+from edc_appointment.constants import COMPLETE_APPT
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
 
@@ -38,12 +39,12 @@ class MissingCRFsReportView(
                 created__lte=end_date).values_list(
                     'subject_identifier', flat=True)
         else:
-            registered_identifiers = self.registered_subject_cls.objects.all(
-            ).values_list('subject_identifier', flat=True)
+            registered_identifiers = self.registered_subject_cls.objects.all().values_list(
+                'subject_identifier', flat=True)
         required_crfs = crfmetadata.objects.filter(
             subject_identifier__in=registered_identifiers, entry_status='REQUIRED')
         data = [(qs.subject_identifier, qs.schedule_name, qs.visit_code,
-                 qs.visit_code_sequence, qs.verbose_name) for qs in required_crfs]
+                 qs.visit_code_sequence, qs.verbose_name) for qs in required_crfs if self.check_appt_status(qs)]
         df = pd.DataFrame.from_records(
             data,
             columns=['Subject Identifier', 'Schedule Name', 'Visit Code', 'Timepoint', 'CRF name'])
@@ -53,6 +54,20 @@ class MissingCRFsReportView(
             return grouped['CRF name'].apply(
                 lambda group_series: group_series.tolist()).reset_index()
         return df
+
+    def check_appt_status(self, required_crf=None):
+        appointment_model_cls = django_apps.get_model(
+            required_crf.schedule.appointment_model)
+        try:
+            appt = appointment_model_cls.objects.get(
+                subject_identifier=required_crf.subject_identifier,
+                visit_code=required_crf.visit_code,
+                visit_code_sequence=required_crf.visit_code_sequence,
+                schedule_name=required_crf.schedule_name)
+        except appointment_model_cls.DoesNotExist:
+            return False
+        else:
+            return False if appt.appt_status == COMPLETE_APPT else True
 
     def get_success_url(self):
         return reverse('flourish_reports:missing_crfs_report_url')
