@@ -1,12 +1,12 @@
-import pandas as pd
 from functools import reduce
 
-from django_pandas.io import read_frame
 from django.db.models import Q
+from edc_constants.constants import NO, YES
 
-from edc_constants.constants import NO
+from django_pandas.io import read_frame
 from flourish_caregiver.models import MaternalDataset, SubjectConsent, ScreeningPriorBhpParticipants
 from flourish_follow.models import LogEntry, InPersonContactAttempt, WorkList, LogEntry
+import pandas as pd
 
 
 def merge(lst1, lst2):
@@ -28,11 +28,11 @@ class PrevStudyRecruitmentReportMixin:
         if prev_study:
             if prev_study == '-----':
                 qs = WorkList.objects.filter(
-                    created__range=[start_date, end_date], )
+                    created__range=[start_date, end_date],)
             else:
                 qs = WorkList.objects.filter(
                     prev_study=prev_study,
-                    created__range=[start_date, end_date], )
+                    created__range=[start_date, end_date],)
 
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
 
@@ -55,11 +55,11 @@ class PrevStudyRecruitmentReportMixin:
         if prev_study:
             if prev_study == '-----':
                 qs = MaternalDataset.objects.filter(
-                    created__range=[start_date, end_date], )
+                    created__range=[start_date, end_date],)
             else:
                 qs = MaternalDataset.objects.filter(
                     protocol=prev_study,
-                    created__range=[start_date, end_date], )
+                    created__range=[start_date, end_date],)
 
         df = read_frame(qs, fieldnames=['study_maternal_identifier', 'protocol'])
 
@@ -68,6 +68,59 @@ class PrevStudyRecruitmentReportMixin:
         prev_study_list = []
         for prev_study in prev_studies:
             df_prev = df[df['protocol'] == prev_study]
+            prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
+        return prev_study_list
+
+    def cont_contact(self, prev_study=None, start_date=None, end_date=None):
+        """Return number of contacted participants who are still being contacted.
+        """
+        prev_studies = [
+            'Mpepu',
+            'Mma Bana',
+            'Mashi',
+            'Tshilo Dikotla',
+            'Tshipidi']
+
+        worklist_qs = WorkList.objects.filter(
+            is_called=True,
+            assigned__isnull=False,
+        ).values_list('study_maternal_identifier')
+
+        screening_identifiers = SubjectConsent.objects.all().values_list(
+            'screening_identifier', flat=True)
+        screening_identifiers = list(set(screening_identifiers))
+
+        consented_pids = MaternalDataset.objects.filter(
+            screening_identifier__in=screening_identifiers).values_list(
+                'study_maternal_identifier', flat=True)
+
+        no_appt_pids = LogEntry.objects.filter(appt=NO).values_list(
+            'study_maternal_identifier')
+
+        qs = LogEntry.objects.filter(
+            Q(study_maternal_identifier__in=worklist_qs)
+            & ~Q(study_maternal_identifier__in=no_appt_pids)
+            & ~Q(study_maternal_identifier__in=consented_pids),
+            ~Q(phone_num_success=['none_of_the_above']),
+            appt__in=['thinking', YES])
+
+        if prev_study:
+            qs = qs.filter(
+                    created__range=[start_date, end_date])
+
+            if prev_study != '-----':
+                qs = qs.filter(
+                    created__range=[start_date, end_date])
+
+        df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
+        df = df.drop_duplicates(subset=['study_maternal_identifier'])
+
+        result = df
+        result = result.drop_duplicates(subset=['study_maternal_identifier'])
+
+        prev_study_list = []
+        for prev_study in prev_studies:
+            df_prev = result[result['prev_study'] == prev_study]
             prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
         return prev_study_list
 
@@ -80,6 +133,7 @@ class PrevStudyRecruitmentReportMixin:
             'Mashi',
             'Tshilo Dikotla',
             'Tshipidi']
+
         qs = WorkList.objects.filter(
             is_called=True,
             assigned__isnull=False,
@@ -109,6 +163,7 @@ class PrevStudyRecruitmentReportMixin:
                 qs = LogEntry.objects.filter(
                     prev_study=prev_study,
                     created__range=[start_date, end_date])
+
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
         df = df.drop_duplicates(subset=['study_maternal_identifier'])
 
@@ -142,20 +197,18 @@ class PrevStudyRecruitmentReportMixin:
             'Mashi',
             'Tshilo Dikotla',
             'Tshipidi']
+
         qs = WorkList.objects.filter(
             assigned__isnull=False)
+
         if prev_study:
-            if prev_study == '-----':
-                qs = WorkList.objects.filter(
-                    created__range=[start_date, end_date],
-                    assigned__isnull=False,
-                    visited=False)
-            else:
-                qs = WorkList.objects.filter(
-                    prev_study=prev_study,
-                    created__range=[start_date, end_date],
-                    assigned__isnull=False,
-                    visited=False)
+            qs = qs.filter(
+                created__range=[start_date, end_date],
+                assigned__isnull=False,
+                visited=False)
+
+            if prev_study != '-----':
+                qs = qs.filter(prev_study=prev_study)
 
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
 
@@ -180,15 +233,10 @@ class PrevStudyRecruitmentReportMixin:
             assigned__isnull=True,
         )
         if prev_study:
-            if prev_study == '-----':
-                qs = WorkList.objects.filter(
-                    created__range=[start_date, end_date],
-                    assigned__isnull=True, )
-            else:
-                qs = WorkList.objects.filter(
-                    prev_study=prev_study,
-                    assigned__isnull=True,
-                    created__range=[start_date, end_date], )
+            qs = qs.filter(created__range=[start_date, end_date])
+
+            if prev_study != '-----':
+                qs = qs.filter(prev_study=prev_study,)
 
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
 
@@ -294,7 +342,6 @@ class PrevStudyRecruitmentReportMixin:
 
         df1 = df1.drop_duplicates(subset=['study_maternal_identifier'])
 
-
         # Screening rejects
         identifiers = ScreeningPriorBhpParticipants.objects.filter(
             flourish_participation=NO).values_list(
@@ -395,12 +442,15 @@ class PrevStudyRecruitmentReportMixin:
                     prev_study=prev_study,
                     start_date=start_date,
                     end_date=end_date),
-
                 self.non_randomized(
                     prev_study=prev_study,
                     start_date=start_date,
                     end_date=end_date),
                 self.pending(
+                    prev_study=prev_study,
+                    start_date=start_date,
+                    end_date=end_date),
+                self.cont_contact(
                     prev_study=prev_study,
                     start_date=start_date,
                     end_date=end_date),
@@ -421,14 +471,13 @@ class PrevStudyRecruitmentReportMixin:
                     start_date=start_date,
                     end_date=end_date)]
 
-
-
         else:
             data = [
                 self.total_previous_study_participents(),
                 self.total_partici_onworklist(),
                 self.non_randomized(),
                 self.pending(),
+                self.cont_contact(),
                 self.attempts(),
                 self.unable_to_reach(),
                 self.decline_uninterested(),
@@ -439,10 +488,7 @@ class PrevStudyRecruitmentReportMixin:
             for study_number in element:
                 total_per_column += study_number[1]
             total.append(total_per_column)
-        from pprint import pprint; pprint(total)
-
 
         result = reduce(merge, data)
-
 
         return [result, total]
