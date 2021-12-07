@@ -1,29 +1,28 @@
-from django.shortcuts import render
-from django_pandas.io import read_frame
-import pandas as pd
-
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
-
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
 
+from django_pandas.io import read_frame
 from flourish_follow.models import LogEntry
+import pandas as pd
+
 from ...forms import PrevStudyRecruitmentReportForm, RecruitmentReportForm
 from ...models import ExportFile
 from ..view_mixins import DownloadReportMixin
-from .user_recruitment_report_mixin import UserRecruitmentReportMixin
 from .prev_study_recruitment_report import PrevStudyRecruitmentReportMixin
-from django.contrib.auth.mixins import LoginRequiredMixin
+from .user_recruitment_report_mixin import UserRecruitmentReportMixin
 
 
-class RecruitmentReportView(
-    DownloadReportMixin, UserRecruitmentReportMixin,
-    PrevStudyRecruitmentReportMixin, EdcBaseViewMixin,
-    NavbarViewMixin, TemplateView, FormView, LoginRequiredMixin):
+class RecruitmentReportView(DownloadReportMixin, UserRecruitmentReportMixin,
+                            PrevStudyRecruitmentReportMixin, EdcBaseViewMixin,
+                            NavbarViewMixin, TemplateView, FormView, LoginRequiredMixin):
+
     form_class = RecruitmentReportForm
     template_name = 'flourish_reports/recruitment_reports.html'
     navbar_name = 'flourish_reports'
@@ -45,7 +44,9 @@ class RecruitmentReportView(
             totals = [['Totals'] + recruitment[0]]
             data = recruitment[1] + totals
             if 'rdownload_report' in self.request.POST:
-                report_data = self.recruitment(username=username, start_date=start_date, end_date=end_date)
+                report_data = self.recruitment(username=username,
+                                               start_date=start_date,
+                                               end_date=end_date)
                 report_data = report_data[1] + [['Totals'] + report_data[0]]
                 columns = [
                     'Staff Member',
@@ -108,6 +109,7 @@ class RecruitmentReportView(
                         'Previous Study',
                         'Attempts',
                         'Pending',
+                        'Continued Contact',
                         'Unable To Reach',
                         'Decline/Uninterested',
                         'Thinking',
