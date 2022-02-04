@@ -1,182 +1,24 @@
-from collections import Counter
-from collections import OrderedDict
-
-import pandas
-from django.apps import apps as django_apps
-
-import pandas as pd
-
 from django.contrib.auth.decorators import login_required
-from django.db.models import QuerySet
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
+import pandas
+
+from flourish_caregiver.models import *
+from flourish_follow.models import LogEntry
 
 from ...forms import EnrolmentReportForm
 from ...models import ExportFile
-
 from ..view_mixins import DownloadReportMixin
-
-from flourish_follow.models import LogEntry
-from flourish_caregiver.models import *
+from .enrollment_report_mixin import EnrolmentReportMixin
 
 
-class EnrolmentReportMixin:
-    child_consents_cls = django_apps.get_model('flourish_caregiver.caregiverchildconsent')
-    maternal_dataset_cls = django_apps.get_model('flourish_caregiver.maternaldataset')
-    child_dataset_cls = django_apps.get_model('flourish_child.childdataset')
+class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
+                          EdcBaseViewMixin, NavbarViewMixin, TemplateView, FormView):
 
-    def all_cohort_report(self, start_date=None, end_date=None):
-        """Return a total enrolment per cohort.
-        """
-        consents: QuerySet = None
-
-        if start_date and end_date:
-            consents = CaregiverChildConsent.objects.filter(
-                created__gte=start_date,
-                created__lte=end_date)
-        else:
-            consents = CaregiverChildConsent.objects.all()
-
-        # get cohort secondary aims
-
-        reports_totals = {'Cohort A': 0, 'Cohort A Secondary Aims': consents.filter(cohort='cohort_a_sec').count(),
-                          'Cohort B': 0, 'Cohort B Secondary Aims': consents.filter(cohort='cohort_b_sec').count(),
-                          'Cohort C': 0, 'Cohort C Secondary Aims': consents.filter(cohort='cohort_c_sec').count()}
-
-        # reusing functions to get the total for each cohort
-
-        for value in self.cohort_a().values():
-            reports_totals['Cohort A'] += value
-
-        for value in self.cohort_b().values():
-            reports_totals['Cohort B'] += value
-
-        for value in self.cohort_c().values():
-            reports_totals['Cohort C'] += value
-
-        # reports_totals['Cohort A Secondary Aims'] = consents.
-
-        return reports_totals
-
-    def cohort_a(self, start_date=None, end_date=None):
-        """Returns totals for cohort A.
-        """
-        cohort_a_identifiers = self.child_consents_cls.objects.filter(
-            cohort='cohort_a').values_list(
-            'subject_consent__screening_identifier')
-
-        study_maternal_identifiers = MaternalDataset.objects.values_list(
-            'study_maternal_identifier', flat=True).filter(
-            screening_identifier__in=cohort_a_identifiers)
-
-        heu_count = self.child_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            infant_hiv_exposed='Exposed').count()
-
-        huu_count = self.child_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            infant_hiv_exposed='Unexposed').count()
-
-        ante_enrol_cls = django_apps.get_model('flourish_caregiver.antenatalenrollment')
-        ante_enrol_count = ante_enrol_cls.objects.all().count()
-
-        cohort_a_dict = {
-            'preg_woman': ante_enrol_count,
-            'HEU': heu_count,
-            'HUU': huu_count
-        }
-        return cohort_a_dict
-
-    def cohort_b(self, start_date=None, end_date=None):
-        """Returns totals for cohort B.
-        """
-
-        cohort_b_identifiers = self.child_consents_cls.objects.filter(
-            cohort='cohort_b').values_list(
-            'subject_consent__screening_identifier', flat=True)
-
-        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
-            'study_maternal_identifier', flat=True).filter(
-            screening_identifier__in=cohort_b_identifiers)
-
-        preg_efv_count = self.maternal_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            preg_efv=1).count()
-
-        preg_dtg_count = self.maternal_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            preg_dtg=1).count()
-
-        hiv_neg_preg_count = self.maternal_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            mom_hivstatus='HIV-uninfected').count()
-
-        cohort_b_dict = {
-            'EFV': preg_efv_count,
-            'DTG': preg_dtg_count,
-            'HIV-Preg': hiv_neg_preg_count
-        }
-        return cohort_b_dict
-
-    def cohort_c(self, start_date=None, end_date=None):
-        """Returns totals for cohort C.
-        """
-
-        cohort_c_identifiers = self.child_consents_cls.objects.filter(
-            cohort='cohort_b').values_list(
-            'subject_consent__screening_identifier')
-
-        study_maternal_identifiers = self.maternal_dataset_cls.objects.values_list(
-            'study_maternal_identifier', flat=True).filter(
-            screening_identifier__in=cohort_c_identifiers)
-
-        huu_count = self.child_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            infant_hiv_exposed='Unexposed').count()
-
-        preg_pi_count = self.maternal_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            preg_pi=1).count()
-
-        cohort_c_dict = {
-            'HUU': huu_count,
-            'PI': preg_pi_count,
-        }
-        return cohort_c_dict
-
-    def sec_aims(self, start_date=None, end_date=None):
-        """Returns totals for Secondary Aims.
-        """
-        cohort_sec_identifiers = self.child_consents_cls.objects.filter(
-            cohort__icontains='_sec').values_list('study_child_identifier')
-
-        study_maternal_identifiers = self.child_dataset_cls.objects.values_list(
-            'study_maternal_identifier', flat=True).filter(
-            study_child_identifier__in=cohort_sec_identifiers)
-
-        hiv_preg_count = self.maternal_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            mom_hivstatus='HIV-infected').count()
-
-        hiv_neg_preg_count = self.maternal_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            mom_hivstatus='HIV-uninfected').count()
-
-        cohort_sec_dict = {
-            'WLHIV': hiv_preg_count,
-            'HIV -': hiv_neg_preg_count
-        }
-        return cohort_sec_dict
-
-
-class EnrolmentReportView(
-    DownloadReportMixin, EnrolmentReportMixin,
-    EdcBaseViewMixin, NavbarViewMixin,
-    TemplateView, FormView):
     form_class = EnrolmentReportForm
     template_name = 'flourish_reports/enrolment_reports.html'
     navbar_name = 'flourish_reports'
@@ -184,6 +26,58 @@ class EnrolmentReportView(
 
     def get_success_url(self):
         return reverse('flourish_reports:enrolment_report_url')
+
+    @property
+    def cohort_category_pids(self):
+
+        a_preg_df = pandas.DataFrame(
+            set(self.cohort_a_category_pids.get('preg_woman_pids')),
+            columns=['Cohort A: HEU (200)'])
+
+        a_heu_df = pandas.DataFrame(
+            set(self.cohort_a_category_pids.get('HEU_pids')),
+            columns=['Cohort A: HEU (200)'])
+
+        a_huu_df = pandas.DataFrame(
+            set(self.cohort_a_category_pids.get('HUU_pids')),
+            columns=['Cohort A: HUU (75)'])
+
+        b_efv_df = pandas.DataFrame(
+            set(list(self.cohort_b_category_pids.get('EFV_pids'))),
+            columns=['Cohort B: EFV (100)'])
+
+        b_dtg_df = pandas.DataFrame(
+            set(list(self.cohort_b_category_pids.get('DTG_pids'))),
+            columns=['Cohort B: DTG (100)'])
+
+        b_hiv_preg_df = pandas.DataFrame(
+            set(list(self.cohort_b_category_pids.get('HIV-Preg_pids'))),
+            columns=['Cohort B: HIV - @ Preg (100)'])
+
+        c_huu_df = pandas.DataFrame(
+            set(list(self.cohort_c_category_pids.get('HUU_pids'))),
+            columns=['Cohort C: HUU (200)'])
+
+        c_pi_df = pandas.DataFrame(
+            set(list(self.cohort_c_category_pids.get('PI_pids'))),
+            columns=['Cohort C:  PI (100)'])
+
+        sec_pos_preg_df = pandas.DataFrame(
+            set(list(self.sec_aims_category_pids.get('WLHIV'))),
+            columns=['Secondary Aims: Women Living With HIV'])
+
+        sec_pos_neg_df = pandas.DataFrame(
+            set(list(self.sec_aims_category_pids.get('HIV -'))),
+            columns=['Secondary Aims: Women Living Without HIV'])
+
+        frames = [a_preg_df, a_heu_df, a_huu_df,
+                  b_efv_df, b_dtg_df, b_hiv_preg_df,
+                  c_huu_df, c_pi_df, sec_pos_preg_df,
+                  sec_pos_neg_df]
+
+        pids_df = pandas.concat(frames, axis=1)
+
+        return pids_df
 
     def form_valid(self, form):
 
@@ -196,7 +90,8 @@ class EnrolmentReportView(
                 start_date=start_date,
                 end_date=end_date)
 
-            df1 = pandas.DataFrame(list(cohort_report.items()), columns=['Cohort Enrollments', 'Qty'])
+            df1 = pandas.DataFrame(list(cohort_report.items()),
+                                   columns=['Cohort Enrollments', 'Qty'])
 
             cohort_a = self.cohort_a(
                 start_date=start_date,
@@ -219,13 +114,7 @@ class EnrolmentReportView(
                 end_date=end_date)
             df5 = pandas.DataFrame(list(sec_aims.items()), columns=['Secondary Aims', 'Qty'])
 
-            df = [
-                df1,
-                df2,
-                df3,
-                df4,
-                df5
-            ]
+            df = [df1, df2, df3, df4, df5]
 
             if 'rdownload_report' in self.request.POST:
                 data = [
@@ -241,6 +130,12 @@ class EnrolmentReportView(
                     start_date=start_date, end_date=end_date,
                     report_type='enrolment_reports',
                     df=df)
+
+                self.download_data(
+                    description='Cohort Report Cohort Breakdown',
+                    start_date=start_date, end_date=end_date,
+                    report_type='enrolment_reports',
+                    df=self.cohort_category_pids)
 
             enrolment_downloads = ExportFile.objects.filter(
                 description='enrolment_reports').order_by('uploaded_at')
@@ -273,7 +168,7 @@ class EnrolmentReportView(
             cohort_a=cohort_a,
             cohort_b=cohort_b,
             cohort_c=cohort_c,
-            sec_aims=sec_aims, )
+            sec_aims=sec_aims,)
         return context
 
     @method_decorator(login_required)
