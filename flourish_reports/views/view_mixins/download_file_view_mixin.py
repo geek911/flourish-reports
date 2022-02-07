@@ -1,11 +1,11 @@
-import os
 import datetime
+import os
 
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 
 from ...identifiers import ExportIdentifier
 from ...models import ExportFile
-from django.core.files.storage import FileSystemStorage
 
 
 class DownloadReportMixin:
@@ -21,6 +21,7 @@ class DownloadReportMixin:
         """
         Preparing to upload the file
         """
+
         export_identifier = ExportIdentifier().identifier
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         documents_folder = 'documents'
