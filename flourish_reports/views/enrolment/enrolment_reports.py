@@ -32,7 +32,7 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
 
         a_preg_df = pandas.DataFrame(
             set(self.cohort_a_category_pids.get('preg_woman_pids')),
-            columns=['Cohort A: HEU (200)'])
+            columns=['Cohort A: Preg Women (200)'])
 
         a_heu_df = pandas.DataFrame(
             set(self.cohort_a_category_pids.get('HEU_pids')),
@@ -52,7 +52,7 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
 
         b_hiv_preg_df = pandas.DataFrame(
             set(list(self.cohort_b_category_pids.get('HIV-Preg_pids'))),
-            columns=['Cohort B: HIV - @ Preg (100)'])
+            columns=['Cohort B: HUU (100)'])
 
         c_huu_df = pandas.DataFrame(
             set(list(self.cohort_c_category_pids.get('HUU_pids'))),
