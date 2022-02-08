@@ -109,7 +109,7 @@ class EnrolmentReportMixin:
 
         hiv_neg_pregs = self.maternal_dataset_cls.objects.filter(
             study_maternal_identifier__in=study_maternal_identifiers,
-            mom_hivstatus='HIV-uninfected')
+            mom_hivstatus='HIV-uninfected').values_list('study_maternal_identifier')
 
         self.hiv_neg_preg = self.get_study_child_identifiers(hiv_neg_pregs)
 
