@@ -265,12 +265,12 @@ class EnrolmentReportMixin:
             study_child_identifier__in=self.hiv_pos_preg).values_list(
                 'subject_identifier', flat=True)
 
-        hiv_neg_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=self.hiv_neg_preg).values_list(
+        hiv_neg_sec_pids = self.child_consents_cls.objects.filter(
+            study_child_identifier__in=self.hiv_neg_preg_sec).values_list(
                 'subject_identifier', flat=True)
 
         cohort_sec_pids_dict = {
             'WLHIV': hiv_pos_pids,
-            'HIV -': hiv_neg_pids
+            'HIV -': hiv_neg_sec_pids
         }
         return cohort_sec_pids_dict
