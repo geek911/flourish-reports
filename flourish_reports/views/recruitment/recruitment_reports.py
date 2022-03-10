@@ -24,7 +24,7 @@ class RecruitmentReportView(DownloadReportMixin, UserRecruitmentReportMixin,
                             NavbarViewMixin, TemplateView, FormView, LoginRequiredMixin):
 
     form_class = RecruitmentReportForm
-    template_name = 'flourish_reports/recruitment_reports.html'
+    template_name = 'flourish_reports/recruit/recruitment_reports.html'
     navbar_name = 'flourish_reports'
     navbar_selected_item = 'flourish_reports'
 
