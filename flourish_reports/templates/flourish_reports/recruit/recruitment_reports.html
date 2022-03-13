@@ -8,39 +8,208 @@
 	<script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
 	<script src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
-	<script type="text/javascript">
-	$(document).ready(function() {
-	    $('#item-identifiers').DataTable();
-	} );
-	</script>
+	
+	
+	<link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+		
+	
+	<script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
 
-	<script type="text/javascript">
+<style>
+*{
+list-style: none;
+text-decoration: none;
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Open Sans', sans-serif;
+}
 
-	  jQuery(function() {
-	    jQuery('#users').change(function() {
-	        this.form.submit();
-	    });
-	});
-	</script>
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background: rgb(5, 68, 104);
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 20px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 30px;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.openbtn {
+  font-size: 10px;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #444;
+}
+
+#main {
+  transition: margin-left .5s;
+  padding: 16px;
+}
+
+.wrapper .sidebar ul li a{
+display: block;
+padding: 13px 30px;
+border-bottom: 1px solid #10558d;
+color: rgb(241, 237, 237);
+font-size: 16px;
+position: relative;
+}
+
+.wrapper .sidebar ul li a .icon{
+color: #dee4ec;
+width: 30px;
+display: inline-block;
+}
+
+ 
+
+.wrapper .sidebar ul li a:hover,
+.wrapper .sidebar ul li a.active{
+color: #0c7db1;
+
+background:white;
+    border-right: 2px solid rgb(5, 68, 104);
+}
+
+.wrapper .sidebar ul li a:hover .icon,
+.wrapper .sidebar ul li a.active .icon{
+color: #0c7db1;
+}
+
+.wrapper .sidebar ul li a:hover:before,
+.wrapper .sidebar ul li a.active:before{
+display: block;
+}
+
+.wrapper .section{
+width: calc(100% - 225px);
+margin-left: 225px;
+transition: all 0.5s ease;
+}
+
+
+#main {
+  transition: margin-left .5s;
+  padding: 16px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
+}
+</style>
+
+<script>
+function openNav() {
+  document.getElementById("mySidebar").style.width = "250px";
+  document.getElementById("main").style.marginLeft = "250px";
+}
+
+function closeNav() {
+  document.getElementById("mySidebar").style.width = "0";
+  document.getElementById("main").style.marginLeft= "0";
+}
+
+</script>
 {% endblock extra-scripts %}
 
 
 {% block main %}
-<div class="container">
-	<div class="row">
-		<div class="col-md-8">
-			<div class="panel panel-info">
-		      <div class="panel-heading">Panel with panel-info class</div>
-		      <div class="panel-body">Panel Content</div>
-		    </div>
-		</div>
-		<div class="col-md-4">
-			<div class="panel panel-info">
-		      <div class="panel-heading">Panel with panel-info class</div>
-		      <div class="panel-body">Panel Content</div>
-		    </div>
-		</div>
-	</div>
+	<div id="main">
+	{% include "flourish_reports/recruit/side_navbar.html" %}
 	
+	<div class="container">
+	
+		<div class="tab-content">
+			
+			<div class="tab-pane well active in active" id="home">
+				<div class="row">
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">Previous BHP Study Dataset</div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="fixed table table-hover table-sm table-condensed ">
+							  <thead>
+								<tr>
+								  <th scope="col">Prev BHP Study</th>
+								  <th scope="col">Dataset totals</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for dt in prev_study_data %}
+								<tr>
+								  <td>{{dt.0}}</td>
+								  <td>{{dt.1}}</td>
+								</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">Panel with panel-info class</div>
+						  <div class="panel-body">Panel Content</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="tab-pane well fade" id="dashboard">
+				Side data 2
+			</div>
+			<div class="tab-pane well fade" id="charts">
+				Charts
+			</div>
+			<div class="tab-pane well fade" id="perfomance">
+				Performance
+			</div>
+			<div class="tab-pane well fade" id="downloads">
+				Downloads
+			</div>
+		</div>
+		
+	
+	</div>
 </div>
+
 {% endblock main %}

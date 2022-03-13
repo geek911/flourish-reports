@@ -1,0 +1,1 @@
+from .recruitment_reports_classs import RecruitmentReport
