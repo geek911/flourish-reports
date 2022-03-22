@@ -312,7 +312,6 @@ function closeNav() {
 
 {% block main %}
 	<div id="main">
-	{% include "flourish_reports/recruit/side_navbar.html" %}
 	<h2 class="text-center">Infant Previous Study Data Reports <input type="button" value="Show/Hide" onClick="showHideDiv('infant_previous_study_data_reports')"/></h2>
 	<div class="container" id="infant_previous_study_data_reports">
 		<div class="tab-content">
@@ -321,7 +320,15 @@ function closeNav() {
 				<div class="row">
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Total Summary Per Study Report</div>
+						  <div class="panel-heading">
+							Total Summary Per Study Report
+							<span class="pull-right">
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#myModal">View Downloads </button
+							<a href="#">
+								<button type="button" class="btn btn-primary btn-sm">download</button>
+							</a>
+						  </span>
+						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -357,19 +364,6 @@ function closeNav() {
 					</div>
 				</div>
 			</div>
-			
-			<div class="tab-pane well fade" id="dashboard">
-				Side data 2
-			</div>
-			<div class="tab-pane well fade" id="charts">
-				Charts
-			</div>
-			<div class="tab-pane well fade" id="perfomance">
-				Performance
-			</div>
-			<div class="tab-pane well fade" id="downloads">
-				Downloads
-			</div>
 		</div>
 	</div>
 		<h2 class="text-center">Locator Data Reports <input type="button" value="Show/Hide" onClick="showHideDiv('locator_data')"/></h2>
@@ -380,7 +374,16 @@ function closeNav() {
 				<div class="row">
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Locator data report</div>
+						  <div class="panel-heading">
+								Locator data report
+								
+								<span class="pull-right">
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#myModal">View Downloads </button
+								<a href="#">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+							  </span>
+							</div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -412,19 +415,6 @@ function closeNav() {
 					</div>
 				</div>
 			</div>
-
-			<div class="tab-pane well fade" id="dashboard">
-				Side data 2
-			</div>
-			<div class="tab-pane well fade" id="charts">
-				Charts
-			</div>
-			<div class="tab-pane well fade" id="perfomance">
-				Performance
-			</div>
-			<div class="tab-pane well fade" id="downloads">
-				Downloads
-			</div>
 		</div>
 	</div>
 
@@ -436,7 +426,15 @@ function closeNav() {
 				<div class="row">
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Recruitment Reports</div>
+						  <div class="panel-heading">
+								Recruitment Reports
+								<span class="pull-right">
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#myModal">View Downloads </button
+								<a href="#">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+							  </span>
+							</div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -471,7 +469,15 @@ function closeNav() {
 				<div class="row">
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Total Calling Attempts</div>
+						  <div class="panel-heading">
+							Calling Attempts
+							<span class="pull-right">
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#myModal">View Downloads </button
+								<a href="#">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+							  </span>
+						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -504,7 +510,16 @@ function closeNav() {
 				<div class="row">
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Total number of participants to call again</div>
+						  <div class="panel-heading">
+							Total number of participants to call 
+							<span class="pull-right">
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#myModal">View Downloads </button
+								<a href="#">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+							  </span>
+
+						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -530,7 +545,16 @@ function closeNav() {
 
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Participants not able to reach</div>
+						  <div class="panel-heading">
+							Participants not able to reach
+							<span class="pull-right">
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#myModal">View Downloads </button
+								<a href="#">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+							  </span>
+
+						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -559,7 +583,16 @@ function closeNav() {
 				<div class="row">
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Total Declined</div>
+						  <div class="panel-heading">
+							Total Declined
+							<span class="pull-right">
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#myModal">View Downloads </button
+								<a href="#">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+							  </span>
+
+						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -585,7 +618,16 @@ function closeNav() {
 
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Total Consented</div>
+						  <div class="panel-heading">
+							Total Consented
+							<span class="pull-right">
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#myModal">View Downloads </button
+								<a href="#">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+							  </span>
+
+						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -617,7 +659,7 @@ function closeNav() {
 				</div>
 		</div>
 	</div>
-
+{% include "flourish_reports/recruit/dataset_downloads.html" %}
 </div>
 
 {% endblock main %}
