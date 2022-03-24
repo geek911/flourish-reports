@@ -17,10 +17,4 @@ flourish_reports.append_item(
                fa_icon='fa-cogs',
                url_name='flourish_reports:enrolment_report_url'))
 
-flourish_reports.append_item(
-    NavbarItem(name='missing_crfs_reports',
-               label='Missing CRFs reports',
-               fa_icon='fa-cogs',
-               url_name='flourish_reports:missing_crfs_report_url'))
-
 site_navbars.register(flourish_reports)
