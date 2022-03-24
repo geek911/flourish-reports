@@ -3,6 +3,7 @@ import os
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from edc_base.utils import get_utcnow
 
 from ...identifiers import ExportIdentifier
 from ...models import ExportFile
@@ -32,7 +33,7 @@ class DownloadReportMixin:
         Check if the directory exist
         """
         if not os.path.exists(file_directory):
-            os.mkdir(file_directory)
+            os.makedirs(file_directory)
 
         final_path = os.path.join(file_directory, file_name)
 
@@ -54,7 +55,7 @@ class DownloadReportMixin:
         export_file = ExportFile()
         export_file.export_identifier = export_identifier
         export_file.start_date = start_date
-        export_file.end_date = end_date
+        export_file.end_date = get_utcnow().date()
         export_file.description = report_type
         export_file.document = os.path.join(documents_folder, report_type, file_name)
         export_file.save()

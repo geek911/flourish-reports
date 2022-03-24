@@ -100,6 +100,31 @@ class RecruitmentReport:
         child_dataset_starts.append(['All studies', total])
         return child_dataset_starts
 
+    
+    @property
+    def locator_df(self):
+        """Returns a dataframe for locator information availability.
+        """
+        # Existing total locators per study
+        locator_identifiers = CaregiverLocator.objects.all().values_list('study_maternal_identifier', flat=True)
+        locator_identifiers = list(set(locator_identifiers))
+        maternal_dataset = MaternalDataset.objects.filter(study_maternal_identifier__in=locator_identifiers)
+        available_df = read_frame(maternal_dataset, fieldnames=['protocol', 'study_maternal_identifier'])
+        available_df["Available"] = True
+        
+        # Missing locators per prev study
+        all_data = MaternalDataset.objects.all().values_list('study_maternal_identifier', flat=True)
+        missing_locators_identifiers = list(set(all_data) - set(locator_identifiers))
+        missing_locator_dataset = MaternalDataset.objects.filter(
+            study_maternal_identifier__in=missing_locators_identifiers)
+        not_available_df = read_frame(missing_locator_dataset, fieldnames=['protocol', 'study_maternal_identifier'])
+        not_available_df["Available"] = False
+        
+        # Merge frames
+        frames = [available_df, not_available_df]
+        df = pd.concat(frames)
+        return df
+
     def locator_report(self):
         """Return a list of locator availability per prev study participant.
         """
@@ -150,6 +175,38 @@ class RecruitmentReport:
         my_data.insert(0, "Total Missing")
         data.append(my_data)
         return data
+
+
+    @property
+    def randomised_df(self):
+        """Return a dataframe for participant randomisation.
+        """
+        maternal_dataset_identifier = MaternalDataset.objects.all().values_list('study_maternal_identifier', flat=True)
+        maternal_dataset_identifier = list(set(maternal_dataset_identifier))
+
+        # Ranndomised
+        randomised_worklist = WorkList.objects.filter(
+            assigned__isnull=False,
+            study_maternal_identifier__in=maternal_dataset_identifier).values_list('study_maternal_identifier',
+                                                                                   flat=True)
+        maternal_dataset = MaternalDataset.objects.filter(study_maternal_identifier__in=randomised_worklist)
+        df_randomised = read_frame(maternal_dataset, fieldnames=['protocol', 'study_maternal_identifier'])
+        df_randomised
+
+
+        # Not Ranndomised
+        not_randomised_worklist = WorkList.objects.filter(
+            assigned__isnull=True,
+            study_maternal_identifier__in=maternal_dataset_identifier).values_list('study_maternal_identifier',
+                                                                                   flat=True)
+        maternal_dataset = MaternalDataset.objects.filter(study_maternal_identifier__in=randomised_worklist)
+        df_not_randomised = read_frame(maternal_dataset, fieldnames=['protocol', 'study_maternal_identifier'])
+        df_not_randomised["Randomisation status"] = False
+        
+        # Merge frames
+        frames = [df_randomised, df_not_randomised]
+        df = pd.concat(frames)
+        return df
 
     def worklist_report(self):
         """Return a list of worklist report vs all paticipants data. Fixme refactor
@@ -275,40 +332,62 @@ class RecruitmentReport:
         # End
         return data
 
-    def attemps_report_data(self):
 
+    @property
+    def attempts_df(self):
+        """Returns a dataframe of attempts.
+        """
+        qs = LogEntry.objects.all()
+        attempt_identifiers = qs.values_list('study_maternal_identifier', flat=True)
+        data_set_identifier = MaternalDataset.objects.all().values_list('study_maternal_identifier', flat=True)
+        all_identifiers = list(set(data_set_identifier))
+        tried_identifiers = list(set(attempt_identifiers))
+        
+        maternal_dataset = MaternalDataset.objects.filter(study_maternal_identifier__in=tried_identifiers)
+        attempted_df = read_frame(maternal_dataset, fieldnames=['protocol', 'study_maternal_identifier'])
+        attempted_df["Attempted status"] = True
+        
+        not_attempted = list(set(all_identifiers) - set(tried_identifiers))
+        maternal_dataset = MaternalDataset.objects.filter(study_maternal_identifier__in=not_attempted)
+        not_attempted_df = read_frame(maternal_dataset, fieldnames=['protocol', 'study_maternal_identifier'])
+        not_attempted_df["Attempted status"] = False
+        
+        
+        # Merge frames
+        frames = [attempted_df, not_attempted_df]
+        df = pd.concat(frames)
+        return df
+        
+
+    def attempts_report_data(self):
+        """Returns a report for participants who attempts where made.
+        """
         data = []
-        prev_studies = [
-            'Mpepu',
-            'Mma Bana',
-            'Mashi',
-            'Tshilo Dikotla',
-            'Tshipidi']
 
         qs = LogEntry.objects.all()
         attempt_identifiers = qs.values_list('study_maternal_identifier', flat=True)
         data_set_identifier = MaternalDataset.objects.all().values_list('study_maternal_identifier', flat=True)
         all_identifiers = list(set(data_set_identifier))
         tried_identifiers = list(set(attempt_identifiers))
-        new_list = list(set(all_identifiers) - set(tried_identifiers))
+        not_attempted = list(set(all_identifiers) - set(tried_identifiers))
 
         # Create a list of those not attempted
         missing_prev_study_list = {}
         merged_list_of_miss_by_study = []
-        for prev_study in prev_studies:
-            datas = MaternalDataset.objects.filter(protocol=prev_study, study_maternal_identifier__in=new_list)
+        for prev_study in self.previous_studies:
+            datas = MaternalDataset.objects.filter(protocol=prev_study, study_maternal_identifier__in=not_attempted)
             merged_list_of_miss_by_study += list(datas.values_list('study_maternal_identifier', 'protocol'))
             missing_prev_study_list[prev_study] = datas.count()
 
         # Create a list of attempted
         merged_list_of_attempts_by_study = []
-        for prev_study in prev_studies:
+        for prev_study in self.previous_studies:
             datas = MaternalDataset.objects.filter(protocol=prev_study, study_maternal_identifier__in=tried_identifiers)
             merged_list_of_attempts_by_study += list(datas.values_list('study_maternal_identifier', 'protocol'))
 
         prev_study_list = {}
         total_attempts = 0
-        for prev_study in prev_studies:
+        for prev_study in self.previous_studies:
             datas = LogEntry.objects.filter(prev_study=prev_study).values_list('study_maternal_identifier', flat=True)
             datas = list(set(datas))
             prev_study_list[prev_study] = len(datas)
@@ -323,18 +402,14 @@ class RecruitmentReport:
 
         dataset = MaternalDataset.objects.all()
 
-        all_data = attempts_data + [['All Studies', dataset.count(), total_attempts, len(new_list)]]
-        return all_data, total_attempts, len(new_list)
+        all_data = attempts_data + [['All Studies', dataset.count(), total_attempts, len(not_attempted)]]
+        return all_data, total_attempts, len(not_attempted)
 
-    def participants_to_call_again(self):
 
-        prev_studies = [
-            'Mpepu',
-            'Mma Bana',
-            'Mashi',
-            'Tshilo Dikotla',
-            'Tshipidi']
-
+    @property
+    def to_call_df(self):
+        """Return a dataframe for participants who are still being contacted.
+        """
         # Return number of contacted participants who are still being contacted.
         total = 0
         screening_identifiers = SubjectConsent.objects.all().values_list(
@@ -358,26 +433,25 @@ class RecruitmentReport:
 
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
         df = df.drop_duplicates(subset=['study_maternal_identifier'])
+        df = df.drop_duplicates(subset=['study_maternal_identifier'])
+        return df
 
-        result = df
-        result = result.drop_duplicates(subset=['study_maternal_identifier'])
-
+    def participants_to_call_again(self):
+        """Return a report for participants who are still being contacted.
+        """
+        result = self.to_call_df
+        total = 0
         prev_study_list = []
-        for prev_study in prev_studies:
+        for prev_study in self.previous_studies:
             df_prev = result[result['prev_study'] == prev_study]
             prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
             total += df_prev[df_prev.columns[0]].count()
         return prev_study_list, total
 
-    def participants_not_reachable(self):
-
-        prev_studies = [
-            'Mpepu',
-            'Mma Bana',
-            'Mashi',
-            'Tshilo Dikotla',
-            'Tshipidi']
-
+    @property
+    def not_reacheble_df(self):
+        """"Returns a dataframe for participants who are not reacheble.
+        """
         screening_identifiers = SubjectConsent.objects.all().values_list(
             'screening_identifier', flat=True)
         screening_identifiers = list(set(screening_identifiers))
@@ -411,10 +485,16 @@ class RecruitmentReport:
 
         df = read_frame(qs, fieldnames=['prev_study', 'study_maternal_identifier'])
         df = df.drop_duplicates(subset=['study_maternal_identifier'])
-        # df.to_csv('unable_to_reach.csv', encoding='utf-8')
+        return df
+
+
+    def participants_not_reachable(self):
+        """Returns a report for participants who are not reacheble.
+        """
+        df = self.not_reacheble_df
         prev_study_list = []
         total = 0
-        for prev_study in prev_studies:
+        for prev_study in self.previous_studies:
             df_prev = df[df['prev_study'] == prev_study]
             prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
             total += df_prev[df_prev.columns[0]].count()
@@ -425,15 +505,10 @@ class RecruitmentReport:
         # display(HTML(results.to_html()))
         return prev_study_list, total
 
-    def declined(self):
-
-        prev_studies = [
-            'Mpepu',
-            'Mma Bana',
-            'Mashi',
-            'Tshilo Dikotla',
-            'Tshipidi']
-
+    @property
+    def declined_df(self):
+        """Returns a dataframe for declined participants.
+        """
         screening_identifiers = SubjectConsent.objects.all().values_list(
             'screening_identifier', flat=True)
         screening_identifiers = list(set(screening_identifiers))
@@ -466,10 +541,16 @@ class RecruitmentReport:
         # Merge frames
         frames = [df1, df2]
         df = pd.concat(frames)
-        # df.to_csv('declined.csv', encoding='utf-8')
+        return df
+
+
+    def declined(self):
+        """Returns a report of declined participants.
+        """
+        df = self.declined_df
         prev_study_list = []
         total = 0
-        for prev_study in prev_studies:
+        for prev_study in self.previous_studies:
             df_prev = df[df['prev_study'] == prev_study]
             prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
             total += df_prev[df_prev.columns[0]].count()
@@ -478,17 +559,10 @@ class RecruitmentReport:
 
         return prev_study_list, total
 
-
-    def consented(self):
-
-
-        prev_studies = [
-            'Mpepu',
-            'Mma Bana',
-            'Mashi',
-            'Tshilo Dikotla',
-            'Tshipidi']
-
+    @property
+    def consented_df(self):
+        """Returns a data frame of consented participants.
+        """
         screening_identifiers = SubjectConsent.objects.all().values_list(
             'screening_identifier', flat=True)
         screening_identifiers = list(set(screening_identifiers))
@@ -496,10 +570,15 @@ class RecruitmentReport:
             screening_identifier__in=screening_identifiers)
         df = read_frame(qs, fieldnames=['protocol', 'study_maternal_identifier'])
         df = df.drop_duplicates(subset=['study_maternal_identifier'])
-        # df.to_csv('consented.csv', encoding='utf-8')
+        return df
+
+    def consented(self):
+        """Returns a report of consented participants.
+        """
+        df = self.consented_df
         prev_study_list = []
         total = 0
-        for prev_study in prev_studies:
+        for prev_study in self.previous_studies:
             df_prev = df[df['protocol'] == prev_study]
             prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
             total += df_prev[df_prev.columns[0]].count()

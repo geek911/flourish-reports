@@ -9,10 +9,10 @@
           <h4 class="modal-title">Download generated exports</h4>
         </div>
         <div class="modal-body">
-          {% if enrolment_downloads %}
+          {% if prev_study_data_downloads %}
           <div class="panel panel-info">
             <div class="panel-heading">
-              <h4>Enrolment Report Downloads</h4>
+              <h4>Prev Study Download</h4>
             </div>
             <div class="panel-body">
               <table
@@ -38,7 +38,7 @@
                   </tr>
                 </tfoot>
                 <tbody>
-                  {% for download in enrolment_downloads %}
+                  {% for download in prev_study_data_downloads %}
                   <tr>
                     <td>{{ download.export_identifier }}</td>
                     <td>
