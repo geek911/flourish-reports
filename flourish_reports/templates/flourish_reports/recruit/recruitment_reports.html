@@ -19,6 +19,166 @@
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script src="https://code.highcharts.com/highcharts-3d.js"></script>
 
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+  	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+  	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+	<script type="text/javascript">
+
+		function showHideDiv(ele) {
+                var srcElement = document.getElementById(ele);
+                if (srcElement != null) {
+                    if (srcElement.style.display == "block") {
+                        srcElement.style.display = 'none';
+                    }
+                    else {
+                        srcElement.style.display = 'block';
+                    }
+                    return false;
+                }
+        }
+		  google.charts.load('current', {'packages':['corechart']});
+		  google.charts.setOnLoadCallback(drawPieChart);
+
+		  function drawPieChart() {
+
+			var data = google.visualization.arrayToDataTable([
+			  ['Previous Study', 'Total'],
+			  ['Tshilo Dikotla', {{pie_chart.tshilo_dikotla|escapejs}}],
+			  ['Tshipidi',     {{pie_chart.tshipidi|escapejs}}],
+			  ['Mpepu',      {{pie_chart.mpepu|escapejs}}],
+			  ['Mashi',  {{pie_chart.mashi|escapejs}}],
+			  ['Mma Bana', {{pie_chart.mma_bana|escapejs}}],
+			]);
+
+			var options = {
+			  title: 'Caregiver Previous Study Data',
+			   pieHole: 0.4
+			};
+
+			var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+			chart.draw(data, options);
+		  }
+
+		  function drawChart() {
+		  	    const studies = {{previous_studies|safe}}
+		  	    console.log(studies);
+
+
+		  		const chart_items = {{locator_report|safe}}
+		  	    mma_bana_list = ['Mma Bana', chart_items[0][1], chart_items[1][1], chart_items[2][1]]
+		  	    tshipidi_list = ['Tshipidi', chart_items[0][2], chart_items[1][2], chart_items[2][2]]
+		  	    tshilo_dikotla_list = ['Tshilo Dikotla', chart_items[0][3], chart_items[1][3], chart_items[2][3]]
+		  	    mpepu_list = ['Mpepu', chart_items[0][4], chart_items[1][4], chart_items[2][4]]
+		  	    mashi_list = ['Mashi', chart_items[0][5], chart_items[1][5], chart_items[2][5]]
+		  	    // fixme use nested for
+		  	    const bar_chart_data = [['Study', 'Total Expected','Total Existing', 'Total Missing']];
+		  	    bar_chart_data.push(mma_bana_list);
+		  	    bar_chart_data.push(tshipidi_list);
+		  	    bar_chart_data.push(tshilo_dikotla_list);
+		  	    bar_chart_data.push(mpepu_list);
+				bar_chart_data.push(mashi_list);
+				console.log(bar_chart_data);
+
+		  		var data = google.visualization.arrayToDataTable(bar_chart_data);
+				var options = {
+				  chart: {
+					title: 'Locator Data'
+				  },
+				  bars: 'vertical' // Required for Material Bar Charts.
+				}
+
+				var chart = new google.charts.Bar(document.getElementById('barchart_material'));
+
+				chart.draw(data, google.charts.Bar.convertOptions(options));
+      	  }
+
+		  google.charts.load('current', {'packages':['bar']});
+		  google.charts.setOnLoadCallback(drawChart);
+
+		  function drawStackBarChart(){
+
+		  		const chart_items = {{worklist_report|safe}}
+		  	    mma_bana_list = ['Mma Bana', chart_items[0][1], chart_items[1][1], chart_items[2][1], chart_items[3][1], chart_items[4][1]]
+		  	    tshipidi_list = ['Tshipidi', chart_items[0][2], chart_items[1][2], chart_items[2][2], chart_items[3][2], chart_items[4][2]]
+		  	    tshilo_dikotla_list = ['Tshilo Dikotla', chart_items[0][3], chart_items[1][3], chart_items[2][3], chart_items[3][3], chart_items[4][3]]
+		  	    mpepu_list = ['Mpepu', chart_items[0][4], chart_items[1][4], chart_items[2][4], chart_items[3][4], chart_items[4][4]]
+		  	    mashi_list = ['Mashi', chart_items[0][5], chart_items[1][5], chart_items[2][5], chart_items[3][5], chart_items[4][5]]
+
+		  	    const bar_chart_data = [['Study', 'Expected','Existing', 'Missing','Randomised', 'Not randomised']];
+		  	    bar_chart_data.push(mma_bana_list);
+		  	    bar_chart_data.push(tshipidi_list);
+		  	    bar_chart_data.push(tshilo_dikotla_list);
+		  	    bar_chart_data.push(mpepu_list);
+				bar_chart_data.push(mashi_list);
+				console.log(bar_chart_data);
+
+				var data = google.visualization.arrayToDataTable(bar_chart_data);
+				var options = {
+				  chart: {
+					title: 'Recruitment Data'
+				  },
+				  bars: 'vertical'
+				};
+
+				var chart = new google.charts.Bar(document.getElementById('barchart_material_1'));
+
+				chart.draw(data, google.charts.Bar.convertOptions(options));
+		  }
+
+		  google.charts.load('current', {'packages':['bar']});
+		  google.charts.setOnLoadCallback(drawStackBarChart);
+
+
+		  function drawAttemptsPieChart() {
+
+			var data = google.visualization.arrayToDataTable([
+			  ['All Studies', 'Total'],
+			  ['Total Attempts', {{total_attempts}}],
+			  ['Total not attempted', {{not_attempted}}]
+			]);
+
+			var options = {
+			  title: 'Total Attempts Pie Chart',
+			   pieHole: 0.4
+			};
+
+			var chart = new google.visualization.PieChart(document.getElementById('attempts_pie_chart'));
+
+			chart.draw(data, options);
+		  }
+
+		  google.charts.load('current', {'packages':['corechart']});
+		  google.charts.setOnLoadCallback(drawAttemptsPieChart);
+
+
+		  function drawCallingPieChart() {
+
+			var data = google.visualization.arrayToDataTable([
+			  ['Total attempts', 'Total'],
+			  ['Total Continued Contact', {{summary_pie.total_continued_contact}}],
+			  ['Total Decline/Uninterested', {{summary_pie.total_decline_uninterested}}],
+			  ['Total consented', {{summary_pie.total_consented}}],
+			  ['Total Unable to reach', {{summary_pie.total_unable_to_reach}}]
+			]);
+
+			var options = {
+			  title: 'Total Call Attempts Summary Pie Chart',
+			   pieHole: 0.4
+			};
+
+			var chart = new google.visualization.PieChart(document.getElementById('calling_piechart'));
+
+			chart.draw(data, options);
+		  }
+
+		  google.charts.load('current', {'packages':['corechart']});
+		  google.charts.setOnLoadCallback(drawCallingPieChart);
+
+		</script>
 <style>
 *{
 list-style: none;
@@ -152,17 +312,17 @@ function closeNav() {
 
 {% block main %}
 	<div id="main">
-	{% include "flourish_reports/recruit/side_navbar.html" %}
-	
-	<div class="container">
-	
+	<h2 class="text-center">Caregiver Previous Study Data Reports <input type="button" value="Show/Hide" onClick="showHideDiv('caregiver_previous_study_data_reports')"/></h2>
+	<div class="container" id="caregiver_previous_study_data_reports">
 		<div class="tab-content">
 			
 			<div class="tab-pane well active in active" id="home">
 				<div class="row">
 					<div class="col-md-6">
 						<div class="panel panel-info">
-						  <div class="panel-heading">Previous BHP Study Dataset</div>
+						  <div class="panel-heading">
+							Total Summary Per Study Report
+						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
 						  <table class="fixed table table-hover table-sm table-condensed ">
@@ -186,30 +346,326 @@ function closeNav() {
 						</div>
 					</div>
 					<div class="col-md-6">
-						<div class="panel panel-info">
-						  <div class="panel-heading">Panel with panel-info class</div>
-						  <div class="panel-body">Panel Content</div>
-						</div>
+						  <div class="panel-body">
+							  <div id="piechart" style="width: 500px; height: 300px;"></div>
+						  </div>
+					</div>
+				</div>
+				<hr>
+				<div class="row">
+					<div class="col-md-12">
+
 					</div>
 				</div>
 			</div>
-			
-			<div class="tab-pane well fade" id="dashboard">
-				Side data 2
-			</div>
-			<div class="tab-pane well fade" id="charts">
-				Charts
-			</div>
-			<div class="tab-pane well fade" id="perfomance">
-				Performance
-			</div>
-			<div class="tab-pane well fade" id="downloads">
-				Downloads
+		</div>
+	</div>
+		<h2 class="text-center">Locator Data Reports <input type="button" value="Show/Hide" onClick="showHideDiv('locator_data')"/></h2>
+	<div class="container" id="locator_data">
+		<div class="tab-content">
+
+			<div class="tab-pane well active in active" id="home">
+				<div class="row">
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">
+								Locator data report
+								
+								<span class="pull-right">
+								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=locator">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#locatorModal">View Downloads </button>
+							  </span>
+							</div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="fixed table table-hover table-sm table-condensed ">
+							  <thead>
+								<tr>
+									<th></th>
+									{% for value in previous_studies %}
+								  		<th scope="col">{{value}}</th>
+									{% endfor %}
+									<th>All studies</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for dt in locator_report %}
+									<tr>
+										{% for value in dt %}
+											<td>{{value}}</td>
+										{% endfor %}
+									</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						 <div id="barchart_material" style="width: 500px; height: 360px;"></div>
+					</div>
+				</div>
 			</div>
 		</div>
-		
-	
 	</div>
+
+		<h2 class="text-center">Calling Data Reports <input type="button" value="Show/Hide" onClick="showHideDiv('calling_data_reports')"/></h2>
+	<div class="container" id="calling_data_reports">
+		<div class="tab-content">
+
+			<div class="tab-pane well active in active" id="home">
+				<div class="row">
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">
+								Recruitment Reports
+								<span class="pull-right">
+								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=worklist_data">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#worklistModal">View Downloads </button>
+								
+							  </span>
+							</div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="fixed table table-hover table-sm table-condensed ">
+							  <thead>
+								<tr>
+									<th></th>
+									{% for value in previous_studies %}
+								  		<th scope="col">{{value}}</th>
+									{% endfor %}
+									<th>All studies</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for dt in worklist_report %}
+									<tr>
+										{% for value in dt %}
+											<td>{{value}}</td>
+										{% endfor %}
+									</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div id="barchart_material_1" style="width: 500px; height: 300px;"></div>
+					</div>
+				</div>
+				<hr>
+				<div class="row">
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">
+							Calling Attempts
+							<span class="pull-right">
+								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=call_attempts">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#attemptsModal">View Downloads </button>
+								
+							  </span>
+						  </div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="fixed table table-hover table-sm table-condensed ">
+							  <thead>
+								<tr>
+									{% for value in attempts_prev_studies %}
+								  		<th scope="col">{{value}}</th>
+									{% endfor %}
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for dt in attempts_data %}
+									<tr>
+										{% for value in dt %}
+											<td>{{value}}</td>
+										{% endfor %}
+									</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div id="attempts_pie_chart" style="width: 500px; height: 350px;"></div>
+					</div>
+				</div>
+				<hr>
+				<div class="row">
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">
+							Total number of participants to call 
+							<span class="pull-right">
+								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=continued_contact">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#cont_contactModal">View Downloads </button>
+								
+							  </span>
+
+						  </div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="fixed table table-hover table-sm table-condensed ">
+							  <thead>
+								<tr>
+								  <th scope="col">Previous Study</th>
+								  <th scope="col">Total participants</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for dt in participants_to_call_again %}
+								<tr>
+								  <td>{{dt.0}}</td>
+								  <td>{{dt.1}}</td>
+								</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">
+							Participants not able to reach
+							<span class="pull-right">
+								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=not_reacheble">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#unreachebleModal">View Downloads </button>
+								
+							  </span>
+
+						  </div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="fixed table table-hover table-sm table-condensed ">
+							  <thead>
+								<tr>
+								  <th scope="col">Previous Study</th>
+								  <th scope="col">Total participants</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for dt in participants_not_reachable %}
+								<tr>
+								  <td>{{dt.0}}</td>
+								  <td>{{dt.1}}</td>
+								</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+
+			</div>
+				<hr>
+				<div class="row">
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">
+							Total Declined
+							<span class="pull-right">
+								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=declined">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#declinedModal">View Downloads </button>
+								
+							  </span>
+
+						  </div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="fixed table table-hover table-sm table-condensed ">
+							  <thead>
+								<tr>
+								  <th scope="col">Previous Study</th>
+								  <th scope="col">Total participants</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for dt in declined %}
+								<tr>
+								  <td>{{dt.0}}</td>
+								  <td>{{dt.1}}</td>
+								</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+
+					<div class="col-md-6">
+						<div class="panel panel-info">
+						  <div class="panel-heading">
+							Total Consented
+							<span class="pull-right">
+								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=consented">
+									<button type="button" class="btn btn-primary btn-sm">download</button>
+								</a>
+								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#consentedModal">View Downloads </button>
+								
+							  </span>
+
+						  </div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="fixed table table-hover table-sm table-condensed ">
+							  <thead>
+								<tr>
+								  <th scope="col">Previous Study</th>
+								  <th scope="col">Total participants</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for dt in consented %}
+								<tr>
+								  <td>{{dt.0}}</td>
+								  <td>{{dt.1}}</td>
+								</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+
+			</div>
+				<hr>
+				<div class="row text-center">
+					 <div id="calling_piechart" style="width: 900px; height: 500px;"></div>
+				</div>
+				</div>
+		</div>
+	</div>
+{% include "flourish_reports/recruit/consented_downloads.html" %}
+{% include "flourish_reports/recruit/attempts_downloads.html" %}
+{% include "flourish_reports/recruit/cont_contact_downloads.html" %}
+{% include "flourish_reports/recruit/declined_downloads.html" %}
+{% include "flourish_reports/recruit/locator_downloads.html" %}
+{% include "flourish_reports/recruit/unreacheble_downloads.html" %}
+{% include "flourish_reports/recruit/worklist_downloads.html" %}
 </div>
 
 {% endblock main %}
