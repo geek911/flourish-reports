@@ -402,7 +402,7 @@ class RecruitmentReport:
 
         dataset = MaternalDataset.objects.all()
 
-        all_data = attempts_data + [['All Studies', dataset.count(), total_attempts, len(not_attempted)]]
+        all_data = attempts_data + [['All studies', dataset.count(), total_attempts, len(not_attempted)]]
         return all_data, total_attempts, len(not_attempted)
 
 
@@ -446,6 +446,8 @@ class RecruitmentReport:
             df_prev = result[result['prev_study'] == prev_study]
             prev_study_list.append([prev_study, df_prev[df_prev.columns[0]].count()])
             total += df_prev[df_prev.columns[0]].count()
+        
+        prev_study_list.append(['All studies', total])
         return prev_study_list, total
 
     @property

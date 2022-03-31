@@ -6,8 +6,8 @@ from django.views.generic.base import TemplateView
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
 
-from ...classes import RecruitmentReport
-from ...classes.recruitment_reports_classs import PieTotals
+from ...classes import RecruitmentReport, SummaryReport
+from ...classes.recruitment_reports import PieTotals
 from ..view_mixins import DownloadReportMixin
 from ...models import ExportFile 
 
@@ -105,7 +105,10 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             participants_not_reachable=participants_not_reachable,
             declined=declined_data,
             consented=consented_data,
-            summary_pie=summary_pie
+            summary_pie=summary_pie,
+            
+            # Summary report
+            summary_report=SummaryReport().summary_report.to_html()
         )
         return context
 
