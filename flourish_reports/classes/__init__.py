@@ -1,1 +1,2 @@
-from .recruitment_reports_classs import RecruitmentReport
+from .recruitment_reports import RecruitmentReport
+from .summary_report import SummaryReport
