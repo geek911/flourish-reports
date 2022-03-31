@@ -80,7 +80,9 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
         consented_data_downloads = ExportFile.objects.filter(
                 description="Consented  Data").order_by('uploaded_at')
         
-        
+        table_defination = '<table class="fixed table table-hover table-sm table-condensed ">'
+        summary_report = SummaryReport().summary_report.to_html()
+        summary_report = summary_report.replace("<thead>", table_defination)
         context.update(
             # Downloads
             locator_data_downloads=locator_data_downloads,
@@ -108,7 +110,7 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             summary_pie=summary_pie,
             
             # Summary report
-            summary_report=SummaryReport().summary_report.to_html()
+            summary_report=summary_report
         )
         return context
 
