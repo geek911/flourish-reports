@@ -629,6 +629,4 @@ class RecruitmentReport:
             total += df_prev[df_prev.columns[0]].count()
 
         prev_study_list.append(['All studies', total])
-        print(prev_study_list, "$###################")
-
         return prev_study_list, total
