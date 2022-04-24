@@ -6,20 +6,19 @@ from django.views.generic.base import TemplateView
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
 
-from ...classes import RecruitmentReport, SummaryReport
-from ...classes.recruitment_reports import PieTotals
+from ...classes import RecruitmentReport
 from ..view_mixins import DownloadReportMixin
 from ...models import ExportFile 
 
 
-class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
+class DownloadReportView(EdcBaseViewMixin, DownloadReportMixin,
                             NavbarViewMixin, TemplateView, LoginRequiredMixin):
-    template_name = 'flourish_reports/recruit/recruitment_reports.html'
+    template_name = 'flourish_reports/recruit/download_reports.html'
     navbar_name = 'flourish_reports'
     navbar_selected_item = 'flourish_reports'
 
     def get_success_url(self):
-        return reverse('flourish_reports:recruitment_report_url')
+        return reverse('flourish_reports:download_report_url')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -44,26 +43,6 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             self.download_data(description="Consented  Data",  report_type="Consented  Data", df=reports.consented_df)
         elif download == "summary":
             self.download_data(description="Summary  Data",  report_type="Summary  Data", df=reports.identifiers_summary_df)
-            
-
-        prev_study_data, pie = reports.caregiver_prev_study_dataset()
-
-        attempts_prev_studies = [
-            'Previous Study',
-            'Total Study Participants',
-            'Total Attempts',
-            'Total not attempted']
-        declined_data, total_decline = reports.declined()
-        consented_data, total_consented = reports.consented()
-        participants_not_reachable, total_participants_not_reachable = reports.participants_not_reachable()
-        participants_to_call_again, total_participants_to_call_again = reports.participants_to_call_again()
-
-        summary_pie = PieTotals(
-            total_continued_contact=total_participants_to_call_again,
-            total_consented=total_consented,
-            total_unable_to_reach=total_participants_not_reachable,
-            total_decline_uninterested=total_decline)
-        attempts_data, total_attempts, not_attempted = reports.attempts_report_data()
         
         
         # Downloaed files
@@ -83,10 +62,6 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
                 description="Consented  Data").order_by('uploaded_at')
         summary_data_downloads = ExportFile.objects.filter(
                 description="Summary  Data").order_by('uploaded_at')
-        
-        table_defination = '<table class="fixed table table-hover table-sm table-condensed ">'
-        summary_report = SummaryReport().summary_report.to_html()
-        summary_report = summary_report.replace("<thead>", table_defination)
         context.update(
             # Downloads
             locator_data_downloads=locator_data_downloads,
@@ -96,31 +71,10 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             declined_data_downloads=declined_data_downloads,
             consented_data_downloads=consented_data_downloads,
             continued_contact_data_downloads=continued_contact_data_downloads,
-            
-            #Reports
-            previous_studies=reports.previous_studies,
-            prev_study_data=prev_study_data,
-            locator_report=reports.locator_report(),
-            pie_chart=pie,
-            worklist_report=reports.worklist_report(),
-            attempts_prev_studies=attempts_prev_studies,
-            attempts_data=attempts_data,
-            total_attempts=total_attempts,
-            not_attempted=not_attempted,
-            participants_to_call_again=participants_to_call_again,
-            participants_not_reachable=participants_not_reachable,
-            declined=declined_data,
-            consented=consented_data,
             summary_data_downloads=summary_data_downloads,
-            summary_pie=summary_pie,
-            
-            # Summary report
-            summary_report=summary_report
         )
         return context
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
-
-# TODO test again

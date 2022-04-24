@@ -313,7 +313,6 @@ function closeNav() {
 
 {% block main %}
 	<div id="main">
-	
 	<h2 class="text-center">Summary Previous Study Data Reports <input type="button" value="Show/Hide" onClick="showHideDiv('summary_previous_study_data_reports')"/></h2>
 	<div class="container" id="summary_previous_study_data_reports">
 		<div class="tab-content">
@@ -321,7 +320,8 @@ function closeNav() {
 		</div>
 		<hr>
 	</div>
-	
+	</div>
+
 	<h2 class="text-center">Caregiver Previous Study Data Reports <input type="button" value="Show/Hide" onClick="showHideDiv('caregiver_previous_study_data_reports')"/></h2>
 	<div class="container" id="caregiver_previous_study_data_reports">
 		<div class="tab-content">
@@ -380,13 +380,6 @@ function closeNav() {
 						<div class="panel panel-info">
 						  <div class="panel-heading">
 								Locator data report
-								
-								<span class="pull-right">
-								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=locator">
-									<button type="button" class="btn btn-primary btn-sm">download</button>
-								</a>
-								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#locatorModal">View Downloads </button>
-							  </span>
 							</div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
@@ -432,13 +425,6 @@ function closeNav() {
 						<div class="panel panel-info">
 						  <div class="panel-heading">
 								Recruitment Reports
-								<span class="pull-right">
-								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=worklist_data">
-									<button type="button" class="btn btn-primary btn-sm">download</button>
-								</a>
-								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#worklistModal">View Downloads </button>
-								
-							  </span>
 							</div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
@@ -476,13 +462,6 @@ function closeNav() {
 						<div class="panel panel-info">
 						  <div class="panel-heading">
 							Calling Attempts
-							<span class="pull-right">
-								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=call_attempts">
-									<button type="button" class="btn btn-primary btn-sm">download</button>
-								</a>
-								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#attemptsModal">View Downloads </button>
-								
-							  </span>
 						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
@@ -518,14 +497,6 @@ function closeNav() {
 						<div class="panel panel-info">
 						  <div class="panel-heading">
 							Total number of participants to call 
-							<span class="pull-right">
-								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=continued_contact">
-									<button type="button" class="btn btn-primary btn-sm">download</button>
-								</a>
-								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#cont_contactModal">View Downloads </button>
-								
-							  </span>
-
 						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
@@ -554,14 +525,6 @@ function closeNav() {
 						<div class="panel panel-info">
 						  <div class="panel-heading">
 							Participants not able to reach
-							<span class="pull-right">
-								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=not_reacheble">
-									<button type="button" class="btn btn-primary btn-sm">download</button>
-								</a>
-								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#unreachebleModal">View Downloads </button>
-								
-							  </span>
-
 						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
@@ -593,14 +556,6 @@ function closeNav() {
 						<div class="panel panel-info">
 						  <div class="panel-heading">
 							Total Declined
-							<span class="pull-right">
-								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=declined">
-									<button type="button" class="btn btn-primary btn-sm">download</button>
-								</a>
-								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#declinedModal">View Downloads </button>
-								
-							  </span>
-
 						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
@@ -629,14 +584,6 @@ function closeNav() {
 						<div class="panel panel-info">
 						  <div class="panel-heading">
 							Total Consented
-							<span class="pull-right">
-								<a href="{% url 'flourish_reports:recruitment_report_url' %}?download=consented">
-									<button type="button" class="btn btn-primary btn-sm">download</button>
-								</a>
-								<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#consentedModal">View Downloads </button>
-								
-							  </span>
-
 						  </div>
 						  <div class="panel-body">
 						  <div class="table-responsive">
@@ -669,13 +616,6 @@ function closeNav() {
 				</div>
 		</div>
 	</div>
-{% include "flourish_reports/recruit/consented_downloads.html" %}
-{% include "flourish_reports/recruit/attempts_downloads.html" %}
-{% include "flourish_reports/recruit/cont_contact_downloads.html" %}
-{% include "flourish_reports/recruit/declined_downloads.html" %}
-{% include "flourish_reports/recruit/locator_downloads.html" %}
-{% include "flourish_reports/recruit/unreacheble_downloads.html" %}
-{% include "flourish_reports/recruit/worklist_downloads.html" %}
 </div>
 
 {% endblock main %}

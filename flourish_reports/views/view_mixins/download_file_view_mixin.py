@@ -2,7 +2,6 @@ import datetime
 import os
 
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from edc_base.utils import get_utcnow
 
 from ...identifiers import ExportIdentifier
@@ -36,7 +35,7 @@ class DownloadReportMixin:
             os.makedirs(file_directory)
 
         final_path = os.path.join(file_directory, file_name)
-
+        print(final_path, 'Filename &&&&&&&&&')
         """
         If dataframes are passed as a list this section merges 
         the df into one single file
@@ -59,3 +58,4 @@ class DownloadReportMixin:
         export_file.description = report_type
         export_file.document = os.path.join(documents_folder, report_type, file_name)
         export_file.save()
+        print('Done creating a file')

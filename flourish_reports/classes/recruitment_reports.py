@@ -448,22 +448,36 @@ class RecruitmentReport:
              total_attempts, len(not_attempted)]]
         return all_data, total_attempts, len(not_attempted)
 
+    @property
+    def continued_contact_identifiers(self):
+        """Returns a list of participants who are continued to be contacted.
+        """
+        continued_contact = []
+        for identifier in self.attempted_identifiers:
+            obj = LogEntry.objects.filter(
+                study_maternal_identifier=identifier).order_by('-created')
+            if obj:
+                if obj[0].appt in ['thinking']:
+                    continued_contact.append(identifier)
+                elif obj[0].may_call == 'No' and not obj[0].appt in ['No']:
+                    continued_contact.append(identifier)
+            logs = LogEntry.objects.filter(
+                phone_num_success=['none_of_the_above'],
+                study_maternal_identifier=identifier).order_by('-created')
+            if logs:
+                if logs.count() <= 3:
+                    if logs[0].final_contact == 'No':
+                        continued_contact.append(identifier)
+        continued_contact = list(set(continued_contact) - set(self.consented_identifiers))
+        return continued_contact
+
 
     @property
     def to_call_df(self):
         """Return a dataframe for participants who are still being contacted.
         """
-        no_appt_pids = LogEntry.objects.filter(appt='No').values_list(
-            'study_maternal_identifier', flat=True)
-
-        exclude_identifiers = list(
-            set(self.consented_identifiers)) + list(set(no_appt_pids))
-        exclude_identifiers = list(set(exclude_identifiers))
-
         qs = LogEntry.objects.filter(
-            ~Q(study_maternal_identifier__in=exclude_identifiers),
-            ~Q(phone_num_success=['none_of_the_above']),
-            appt__in=['thinking', 'Yes'])
+            study_maternal_identifier__in=self.continued_contact_identifiers)
 
         df = read_frame(qs, fieldnames=[
             'prev_study', 'study_maternal_identifier'])
@@ -487,44 +501,31 @@ class RecruitmentReport:
         return prev_study_list, total
 
     @property
+    def unreacheble_closed_identifiers(self):
+        """Returns a list of participants that are not reacheble and 3 attempts
+        have been made.
+        """
+        unreacheble = []
+        for identifier in self.attempted_identifiers:
+            logs = LogEntry.objects.filter(
+                phone_num_success=['none_of_the_above'],
+                study_maternal_identifier=identifier).order_by('-created')
+            if logs.count() >= 3:
+                if (logs[0].phone_num_success == ['none_of_the_above'] and
+                    logs[1].phone_num_success == ['none_of_the_above'] and 
+                    logs[2].phone_num_success == ['none_of_the_above'] and
+                    logs[0].final_contact == 'Yes'):
+                    unreacheble.append(identifier)
+        unreacheble = list(set(unreacheble) - set(self.consented_identifiers))
+        return unreacheble
+
+    @property
     def not_reacheble_df(self):
         """"Returns a dataframe for participants who are not reacheble.
         """
-        phone_success = [
-            ['subject_cell'],
-            ['subject_cell_alt'],
-            ['subject_phone'],
-            ['subject_phone_alt'],
-            ['subject_work_phone'],
-            ['indirect_contact_cell'],
-            ['indirect_contact_phone'],
-            ['caretaker_cell'],
-            ['caretaker_tel']
-        ]
-
-        reacheble_identifiers = LogEntry.objects.filter(
-            phone_num_success__in=phone_success).values_list(
-                'study_maternal_identifier', flat=True)
-        reacheble_identifiers = list(set(reacheble_identifiers))
-
-        #All logs that had no phone call success
-        not_reacheble_log_entries = LogEntry.objects.filter(
-            study_maternal_identifier__in=self.attempted_identifiers,
-            phone_num_success=['none_of_the_above']).values_list(
-                'study_maternal_identifier', flat=True)
-        not_reacheble_log_entries = list(set(not_reacheble_log_entries))
-        
-        # Remove those who have been consented
-        not_reacheble_log_entries = list(
-            set(not_reacheble_log_entries) - set(self.consented_identifiers))
-    
-        #Remove those who had success call logs after\
-        not_reacheble_log_entries = list(
-            set(not_reacheble_log_entries) - set(reacheble_identifiers))
-        
-        # Required not reacheble participants
+        # Not reacheble participants
         qs = LogEntry.objects.filter(
-            study_maternal_identifier__in=not_reacheble_log_entries)
+            study_maternal_identifier__in=self.unreacheble_closed_identifiers)
 
         df = read_frame(qs, fieldnames=[
             'prev_study', 'study_maternal_identifier'])
@@ -548,42 +549,34 @@ class RecruitmentReport:
         return prev_study_list, total
 
     @property
-    def declined_df(self):
-        """Returns a dataframe for declined participants.
+    def declined_identifiers(self):
+        """Return identifiers of participants who declined to be part of the
+        study.
         """
-        # qs = LogEntry.objects.filter(
-            # ~Q(appt__in=['thinking', 'Yes']),
-            # Q(may_call__iexact='No'))
-    
-        # Declined by saying do not call me
-        # TODO: waiting for Sara's feedback to know how appointment NO should be applied with reasons
+        # Declined from call log
         declined_do_not_call = LogEntry.objects.filter(
             study_maternal_identifier__in=self.attempted_identifiers,
             may_call__iexact='No').values_list(
                 'study_maternal_identifier', flat=True)
         declined_do_not_call = list(set(declined_do_not_call))
-    
-        declined_appt_no = LogEntry.objects.filter(
-            study_maternal_identifier__in=self.attempted_identifiers,
-            may_call__iexact='No',
-            appt='No').values_list( # TODO: waiting for Sara's feedback to know how appointment NO should be applied with reasons
-                'study_maternal_identifier', flat=True)
-        declined_appt_no = list(set(declined_appt_no))
-            
-        declined_log_entries = list(
-            set(declined_do_not_call) - set(self.consented_identifiers))
-
+        
         # Screening rejects
-        identifiers = ScreeningPriorBhpParticipants.objects.filter(
+        screened_identifiers = ScreeningPriorBhpParticipants.objects.filter(
             flourish_participation='No').values_list(
                 'study_maternal_identifier', flat=True)
-        identifiers = list(set(identifiers))
-        identifiers_list = identifiers + declined_log_entries
+        screened_identifiers = list(set(screened_identifiers))
         
-        identifiers_list = list(set(identifiers_list))
+        # Merge the 2 above lists
+        identifiers = screened_identifiers + declined_do_not_call
+        identifiers = list(set(identifiers) - set(self.consented_identifiers))
+        return identifiers
 
+    @property
+    def declined_df(self):
+        """Returns a dataframe for declined participants.
+        """
         qs = MaternalDataset.objects.filter(
-            study_maternal_identifier__in=identifiers_list)
+            study_maternal_identifier__in=self.declined_identifiers)
         df = read_frame(qs, fieldnames=[
             'protocol', 'study_maternal_identifier'])
         return df
@@ -630,3 +623,35 @@ class RecruitmentReport:
 
         prev_study_list.append(['All studies', total])
         return prev_study_list, total
+
+    def df_transposer(self, elements=[]):
+        """
+        :param elements: Lists of list, for example:
+        elements = [
+            [4, 4],
+            [4, 4, 1],
+            [4, 4, 5, 5, 5, 5, 5, 5],
+        ]
+        """
+        # df - represent the dataframe
+        df = pd.DataFrame(data=elements).T
+        df = df.fillna(0)
+        return df
+
+    @property
+    def identifiers_summary_df(self):
+        """Return a dataframe of a summary list dataframe of identifiers.
+        """
+        summary_list = [
+            self.attempted_identifiers,
+            self.continued_contact_identifiers,
+            self.declined_identifiers,
+            self.unreacheble_closed_identifiers,
+            self.consented_identifiers]
+        df = self.df_transposer(elements=summary_list)
+        df.columns=[
+            'Attempts', 'Continued Contact',
+            'Declined', 'Unreacheble', 'Consented']
+        
+        print(df)
+        return df

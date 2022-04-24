@@ -17,4 +17,10 @@ flourish_reports.append_item(
                fa_icon='fa-cogs',
                url_name='flourish_reports:enrolment_report_url'))
 
+flourish_reports.append_item(
+    NavbarItem(name='download_reports',
+               label='Download reports',
+               fa_icon='fa-cogs',
+               url_name='flourish_reports:download_report_url'))
+
 site_navbars.register(flourish_reports)
