@@ -17,7 +17,7 @@ from django.urls import path
 
 from .admin_site import flourish_reports_admin
 from .views import (
-    EnrolmentReportView, RecruitmentReportView)
+    EnrolmentReportView, RecruitmentReportView, DownloadReportView)
 
 
 app_name = 'flourish_reports'
@@ -25,5 +25,6 @@ app_name = 'flourish_reports'
 urlpatterns = [
     path('admin/', flourish_reports_admin.urls),
     path('recruitment', RecruitmentReportView.as_view(), name='recruitment_report_url'),
+    path('download', DownloadReportView.as_view(), name='download_report_url'),
     path('enrolment', EnrolmentReportView.as_view(), name='enrolment_report_url'),
 ]

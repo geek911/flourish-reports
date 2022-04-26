@@ -1,0 +1,133 @@
+{% extends 'edc_base/base.html' %} {% load static %} {% load crispy_forms_tags%}
+{% load follow_extras %} {% block extra-scripts %} {{ block.super }}
+<script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css"
+/>
+
+{% endblock extra-scripts %} {% block main %}
+<div class="container">
+  <h2>Download Reports</h2>
+  <div class="row">
+	  <aside class="col-sm-3">
+	    
+	    <div class="panel panel-info">
+		    <div class="panel-heading">Summary Download</div>
+		    <div class="panel-body">
+				<a href="{% url 'flourish_reports:download_report_url' %}?download=summary">
+					<button type="button" class="btn btn-primary btn-sm">download</button>
+				</a>
+				<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#summaryModal">View Downloads </button>
+		    </div>
+		</div>
+
+	  </aside>
+	  <!-- col.// -->
+	  <aside class="col-sm-3">
+	  	<div class="panel panel-info">
+		    <div class="panel-heading">Locator Download</div>
+		    <div class="panel-body">
+				<a href="{% url 'flourish_reports:download_report_url' %}?download=locator">
+					<button type="button" class="btn btn-primary btn-sm">download</button>
+				</a>
+				<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#locatorModal">View Downloads </button>
+			</div>
+		</div>	  
+	  </aside>
+	  <!-- col.// -->
+	  <aside class="col-sm-3">
+	  	<div class="panel panel-info">
+		    <div class="panel-heading">Worklist Download</div>
+		    <div class="panel-body">
+				<a href="{% url 'flourish_reports:download_report_url' %}?download=worklist_data">
+					<button type="button" class="btn btn-primary btn-sm">download</button>
+				</a>
+				<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#worklistModal">View Downloads </button>
+	  		</div>
+	  	</div>
+	  </aside>
+	  <!-- col.// -->
+	  <aside class="col-sm-3">
+	  	<div class="panel panel-info">
+		    <div class="panel-heading">Call Attempts Download</div>
+		    <div class="panel-body">
+				<a href="{% url 'flourish_reports:download_report_url' %}?download=call_attempts">
+				<button type="button" class="btn btn-primary btn-sm">download</button>
+				</a>
+				<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#attemptsModal">View Downloads </button>
+	  		</div>
+	  	</div>
+	  </aside>
+	  <!-- col.// -->
+	  
+	  
+	  
+	  
+	  <!-- col.// -->
+	  <aside class="col-sm-3">
+	  	<div class="panel panel-info">
+		    <div class="panel-heading">Continued Contact Download</div>
+		    <div class="panel-body">
+				<a href="{% url 'flourish_reports:download_report_url' %}?download=continued_contact">
+				<button type="button" class="btn btn-primary btn-sm">download</button>
+				</a>
+				<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#cont_contactModal">View Downloads </button>
+	  		</div>
+	  	</div>
+	  </aside>
+	  <!-- col.// -->
+	  
+	  <!-- col.// -->
+	  <aside class="col-sm-3">
+	  	<div class="panel panel-info">
+		    <div class="panel-heading">Unreacheble Download</div>
+		    <div class="panel-body">
+				<a href="{% url 'flourish_reports:download_report_url' %}?download=not_reacheble">
+				<button type="button" class="btn btn-primary btn-sm">download</button></a>
+				<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#unreachebleModal">View Downloads </button>
+	  		</div>
+	  	</div>
+	  </aside>
+	  <!-- col.// -->
+	  
+	  <!-- col.// -->
+	  <aside class="col-sm-3">
+	  	<div class="panel panel-info">
+		    <div class="panel-heading">Declined Download</div>
+		    <div class="panel-body">
+				<a href="{% url 'flourish_reports:download_report_url' %}?download=declined">
+				<button type="button" class="btn btn-primary btn-sm">download</button></a>
+				<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#declinedModal">View Downloads </button>
+	  		</div>
+	  	</div>
+	  </aside>
+	  <!-- col.// -->
+	  
+	  <!-- col.// -->
+	  <aside class="col-sm-3">
+	  	<div class="panel panel-info">
+		    <div class="panel-heading">Consented Download</div>
+		    <div class="panel-body">
+				<a href="{% url 'flourish_reports:download_report_url' %}?download=consented">
+				<button type="button" class="btn btn-primary btn-sm">download</button></a>
+				<button type="button" class="btn btn-sm btn-default btn-sm" data-toggle="modal" data-target="#consentedModal">View Downloads </button>
+	  		</div>
+	  	</div>
+	  </aside>
+	  <!-- col.// -->
+	  
+	</div>
+  
+</div>
+{% include "flourish_reports/recruit/summary_downloads.html" %}
+{% include "flourish_reports/recruit/consented_downloads.html" %}
+{% include "flourish_reports/recruit/attempts_downloads.html" %}
+{% include "flourish_reports/recruit/cont_contact_downloads.html" %}
+{% include "flourish_reports/recruit/declined_downloads.html" %}
+{% include "flourish_reports/recruit/locator_downloads.html" %}
+{% include "flourish_reports/recruit/unreacheble_downloads.html" %}
+{% include "flourish_reports/recruit/worklist_downloads.html" %}
+{% endblock main %}
