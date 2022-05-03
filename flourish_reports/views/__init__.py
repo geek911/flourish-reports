@@ -1,2 +1,3 @@
 from .enrolment.enrolment_reports import EnrolmentReportView
+from .recruitment.download_report import DownloadReportView
 from .recruitment.recruitment_reports import RecruitmentReportView
