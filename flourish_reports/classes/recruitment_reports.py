@@ -440,7 +440,6 @@ class RecruitmentReport:
                 [study, dataset.count(),
                  attempts, missing_prev_study_list.get(study)])
 
-
         dataset = MaternalDataset.objects.all()
 
         all_data = attempts_data + [
@@ -471,7 +470,6 @@ class RecruitmentReport:
         continued_contact = list(set(continued_contact) - set(self.consented_identifiers))
         return continued_contact
 
-
     @property
     def to_call_df(self):
         """Return a dataframe for participants who are still being contacted.
@@ -496,7 +494,7 @@ class RecruitmentReport:
             prev_study_list.append(
                 [prev_study, df_prev[df_prev.columns[0]].count()])
             total += df_prev[df_prev.columns[0]].count()
-        
+
         prev_study_list.append(['All studies', total])
         return prev_study_list, total
 
@@ -581,7 +579,6 @@ class RecruitmentReport:
             'protocol', 'study_maternal_identifier'])
         return df
 
-
     def declined(self):
         """Returns a report of declined participants.
         """
@@ -652,6 +649,4 @@ class RecruitmentReport:
         df.columns=[
             'Attempts', 'Continued Contact',
             'Declined', 'Unreacheble', 'Consented']
-        
-        print(df)
         return df
