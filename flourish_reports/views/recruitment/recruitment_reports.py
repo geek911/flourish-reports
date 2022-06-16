@@ -98,13 +98,13 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
         locator_report = [total_expected, total_existing, total_missing]
         worklist_report = [expected_worklist, existing_worklist,
                            missing_worklist, randomised, not_randomised]
-
-        total_participants_to_call_again = self.total_recruitment.total_participants_to_call_again
-        total_consented = self.total_recruitment.total_consented
-        total_decline = self.total_recruitment.total_decline
-        total_participants_not_reachable = self.total_recruitment.total_participants_not_reachable
-        total_attempts = self.total_recruitment.total_attempts
-        not_attempted = self.total_recruitment.not_attempted
+        if self.total_recruitment:
+            total_participants_to_call_again = self.total_recruitment.total_participants_to_call_again
+            total_consented = self.total_recruitment.total_consented
+            total_decline = self.total_recruitment.total_decline
+            total_participants_not_reachable = self.total_recruitment.total_participants_not_reachable
+            total_attempts = self.total_recruitment.total_attempts
+            not_attempted = self.total_recruitment.not_attempted
 
         attempts_prev_studies = [
             'Previous Study',
