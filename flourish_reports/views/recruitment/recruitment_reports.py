@@ -70,6 +70,9 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
         missing_worklist = ['Missing Worklist']
         randomised = ['Randomised Worklist']
         not_randomised = ['Not randomised & not attempted Worklist']
+        summary_pie = None
+        total_attempts = None
+        not_attempted = None
 
         for stats in self.study_stats:
             prev_study_data.append([stats.study, stats.dataset_total])
@@ -106,17 +109,17 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             total_attempts = self.total_recruitment.total_attempts
             not_attempted = self.total_recruitment.not_attempted
 
+            summary_pie = PieTotals(
+                total_continued_contact=total_participants_to_call_again,
+                total_consented=total_consented,
+                total_unable_to_reach=total_participants_not_reachable,
+                total_decline_uninterested=total_decline)
+
         attempts_prev_studies = [
             'Previous Study',
             'Total Study Participants',
             'Total Attempts',
             'Total not attempted']
-
-        summary_pie = PieTotals(
-            total_continued_contact=total_participants_to_call_again,
-            total_consented=total_consented,
-            total_unable_to_reach=total_participants_not_reachable,
-            total_decline_uninterested=total_decline)
 
         # Downloaed files
         locator_data_downloads = ExportFile.objects.filter(
