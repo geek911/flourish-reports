@@ -62,15 +62,13 @@ class SummaryReport:
         """Returns all previous study locator data starts.
         """
         data = []
-        x = 0
-        while x < 6:
+        for x in range(len(self.previous_studies)):
             data.append([
                 self.previous_studies[x],
                 self.total_expected[x],
                 self.total_existing[x],
                 self.total_missing[x]
             ])
-            x += 1
         df_locator = pd.DataFrame(data, columns=['Previous Studies', 'Expected Locator', 'Existing Locator', 'Missing Locator'])
         return df_locator
 
@@ -79,15 +77,13 @@ class SummaryReport:
         """Returns a participant data frame with randomisation starts.
         """
         data = []
-        x = 0
-        while x < 6:
+        for x in range(len(self.previous_studies)):
             data.append([
                 self.previous_studies[x],
                 self.missing_worklist[x],
                 self.randomised[x],
                 self.not_randomised[x]
             ])
-            x += 1
         df_randomised = pd.DataFrame(data, columns=['Previous Studies', 'Missing On Worklist', 'Randomised', 'Not Randomised'])
         return df_randomised
 
@@ -141,6 +137,4 @@ class SummaryReport:
         result_merge1 = pd.merge(result_all_datan_locator, result_randomised_n_attempts, on='Previous Studies')
         result_merge2 = pd.merge(result_cont_contact_n_unreacheble, result_declined_n_consented, on='Previous Studies')
         result = pd.merge(result_merge1, result_merge2, on='Previous Studies')
-        print(result_merge1)
-        print(result_merge2)
         return result
