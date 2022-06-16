@@ -1,8 +1,5 @@
 import pandas as pd
 
-from flourish_reports.classes import RecruitmentReport
-from ..models import RecruitmentStats
-
 
 class SummaryReport:
 
