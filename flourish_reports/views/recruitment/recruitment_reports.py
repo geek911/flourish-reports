@@ -84,8 +84,6 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
                 [stats.study, stats.not_reacheble])
             participants_to_call_again.append(
                 [stats.study, stats.participants_to_call])
-            participants_to_call_again.append(
-                [stats.study, stats.participants_to_call])
 
             attempts_data.append(
                 [stats.study, stats.study_participants, stats.total_attempts,
@@ -138,9 +136,9 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
         summary_data_downloads = ExportFile.objects.filter(
                 description="Summary  Data").order_by('uploaded_at')
 
-        # table_defination = '<table class="fixed table table-hover table-sm table-condensed ">'
-        # summary_report = SummaryReport().summary_report.to_html()
-        # summary_report = summary_report.replace("<thead>", table_defination)
+        table_defination = '<table class="fixed table table-hover table-sm table-condensed ">'
+        summary_report = SummaryReport(study_stats=self.study_stats).summary_report.to_html()
+        summary_report = summary_report.replace("<thead>", table_defination)
         context.update(
             # Downloads
             locator_data_downloads=locator_data_downloads,
@@ -169,7 +167,7 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             summary_pie=summary_pie,
 
             # Summary report
-            # summary_report=summary_report
+            summary_report=summary_report
         )
         return context
 
