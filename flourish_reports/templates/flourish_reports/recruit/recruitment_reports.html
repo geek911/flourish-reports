@@ -316,7 +316,7 @@ function closeNav() {
 	<h2 class="text-center">Summary Previous Study Data Reports <input type="button" value="Show/Hide" onClick="showHideDiv('summary_previous_study_data_reports')"/></h2>
 	<div class="container" id="summary_previous_study_data_reports">
 		<div class="tab-content">
-			{{ summary_report | safe }}
+			 {{ summary_report | safe }}
 		</div>
 		<hr>
 	</div>
@@ -435,7 +435,6 @@ function closeNav() {
 									{% for value in previous_studies %}
 								  		<th scope="col">{{value}}</th>
 									{% endfor %}
-									<th>All studies</th>
 								</tr>
 							  </thead>
 							  <tbody>

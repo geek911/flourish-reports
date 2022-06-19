@@ -7,9 +7,10 @@ from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
 
 from ...classes import RecruitmentReport, SummaryReport
+from ...models import RecruitmentStats, TotalRecruitmentStats, PieTotalStats 
 from ...classes.recruitment_reports import PieTotals
 from ..view_mixins import DownloadReportMixin
-from ...models import ExportFile 
+from ...models import ExportFile
 
 
 class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
@@ -18,6 +19,12 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
     navbar_name = 'flourish_reports'
     navbar_selected_item = 'flourish_reports'
 
+    study_stats = RecruitmentStats.objects.all()
+
+    total_recruitment = TotalRecruitmentStats.objects.first()
+
+    pie = PieTotalStats.objects.first()
+
     def get_success_url(self):
         return reverse('flourish_reports:recruitment_report_url')
 
@@ -25,7 +32,7 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
         context = super().get_context_data(**kwargs)
 
         reports = RecruitmentReport()
-        
+
         # Download reports
         download = self.request.GET.get('download', None)
         if download == "locator":
@@ -44,28 +51,76 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             self.download_data(description="Consented  Data",  report_type="Consented  Data", df=reports.consented_df)
         elif download == "summary":
             self.download_data(description="Summary  Data",  report_type="Summary  Data", df=reports.identifiers_summary_df)
-            
 
-        prev_study_data, pie = reports.caregiver_prev_study_dataset()
+        prev_study_data = []
+        previous_studies = []
+
+        total_expected = ['Total Expected']
+        total_missing = ['Total Existing']
+        total_existing = ['Total Missing']
+
+        declined_data = []
+        consented_data = []
+        participants_not_reachable = []
+        participants_to_call_again = []
+        attempts_data = []
+
+        expected_worklist = ['Expected Worklist']
+        existing_worklist = ['Existing Worklist']
+        missing_worklist = ['Missing Worklist']
+        randomised = ['Randomised Worklist']
+        not_randomised = ['Not randomised & not attempted Worklist']
+        summary_pie = None
+        total_attempts = None
+        not_attempted = None
+
+        for stats in self.study_stats:
+            prev_study_data.append([stats.study, stats.dataset_total])
+            previous_studies.append(stats.study)
+            total_expected.append(stats.expected_locator)
+            total_missing.append(stats.missing_locator)
+            total_existing.append(stats.existing_locator)
+            declined_data.append([stats.study, stats.declined])
+            consented_data.append([stats.study, stats.consented])
+
+            participants_not_reachable.append(
+                [stats.study, stats.not_reacheble])
+            participants_to_call_again.append(
+                [stats.study, stats.participants_to_call])
+
+            attempts_data.append(
+                [stats.study, stats.study_participants, stats.total_attempts,
+                 stats.total_not_attempted])
+
+            expected_worklist.append(stats.expected_worklist)
+            existing_worklist.append(stats.existing_worklist)
+            missing_worklist.append(stats.missing_worklist)
+            randomised.append(stats.randomised)
+            not_randomised.append(stats.not_randomised)
+
+        locator_report = [total_expected, total_existing, total_missing]
+        worklist_report = [expected_worklist, existing_worklist,
+                           missing_worklist, randomised, not_randomised]
+        if self.total_recruitment:
+            total_participants_to_call_again = self.total_recruitment.total_participants_to_call_again
+            total_consented = self.total_recruitment.total_consented
+            total_decline = self.total_recruitment.total_decline
+            total_participants_not_reachable = self.total_recruitment.total_participants_not_reachable
+            total_attempts = self.total_recruitment.total_attempts
+            not_attempted = self.total_recruitment.not_attempted
+
+            summary_pie = PieTotals(
+                total_continued_contact=total_participants_to_call_again,
+                total_consented=total_consented,
+                total_unable_to_reach=total_participants_not_reachable,
+                total_decline_uninterested=total_decline)
 
         attempts_prev_studies = [
             'Previous Study',
             'Total Study Participants',
             'Total Attempts',
             'Total not attempted']
-        declined_data, total_decline = reports.declined()
-        consented_data, total_consented = reports.consented()
-        participants_not_reachable, total_participants_not_reachable = reports.participants_not_reachable()
-        participants_to_call_again, total_participants_to_call_again = reports.participants_to_call_again()
 
-        summary_pie = PieTotals(
-            total_continued_contact=total_participants_to_call_again,
-            total_consented=total_consented,
-            total_unable_to_reach=total_participants_not_reachable,
-            total_decline_uninterested=total_decline)
-        attempts_data, total_attempts, not_attempted = reports.attempts_report_data()
-        
-        
         # Downloaed files
         locator_data_downloads = ExportFile.objects.filter(
                 description="Locator Data").order_by('uploaded_at')
@@ -83,9 +138,9 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
                 description="Consented  Data").order_by('uploaded_at')
         summary_data_downloads = ExportFile.objects.filter(
                 description="Summary  Data").order_by('uploaded_at')
-        
+
         table_defination = '<table class="fixed table table-hover table-sm table-condensed ">'
-        summary_report = SummaryReport().summary_report.to_html()
+        summary_report = SummaryReport(study_stats=self.study_stats).summary_report.to_html()
         summary_report = summary_report.replace("<thead>", table_defination)
         context.update(
             # Downloads
@@ -96,13 +151,13 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             declined_data_downloads=declined_data_downloads,
             consented_data_downloads=consented_data_downloads,
             continued_contact_data_downloads=continued_contact_data_downloads,
-            
-            #Reports
-            previous_studies=reports.previous_studies,
+
+            # Reports
+            previous_studies=previous_studies,
             prev_study_data=prev_study_data,
-            locator_report=reports.locator_report(),
-            pie_chart=pie,
-            worklist_report=reports.worklist_report(),
+            locator_report=locator_report,
+            pie_chart=self.pie,
+            worklist_report=worklist_report,
             attempts_prev_studies=attempts_prev_studies,
             attempts_data=attempts_data,
             total_attempts=total_attempts,
@@ -113,7 +168,7 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             consented=consented_data,
             summary_data_downloads=summary_data_downloads,
             summary_pie=summary_pie,
-            
+
             # Summary report
             summary_report=summary_report
         )
