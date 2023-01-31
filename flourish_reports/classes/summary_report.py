@@ -13,6 +13,7 @@ class SummaryReport:
 
         self.declined_data = []
         self.consented_data = []
+        self.offstudy_data = []
         self.participants_not_reachable = []
         self.participants_to_call_again = []
         self.attempts_data = []
@@ -30,6 +31,7 @@ class SummaryReport:
             self.total_existing.append(stats.existing_locator)
             self.declined_data.append([stats.study, stats.declined])
             self.consented_data.append([stats.study, stats.consented])
+            self.offstudy_data.append([stats.study, stats.offstudy])
 
             self.participants_not_reachable.append(
                     [stats.study, stats.not_reacheble])
@@ -124,6 +126,13 @@ class SummaryReport:
         return df_consented
 
     @property
+    def total_offstudy(self):
+        """Returns a data frame for paarticipants who have been consented into the study and taken offstudy.
+        """
+        df_offstudy = pd.DataFrame(self.offstudy_data, columns=['Previous Studies', 'Offstudy'])
+        return df_offstudy
+
+    @property
     def summary_report(self):
         """Return a summary report of all startistics.
         """
@@ -133,5 +142,6 @@ class SummaryReport:
         result_declined_n_consented = pd.merge(self.total_declined, self.total_consented, on='Previous Studies')
         result_merge1 = pd.merge(result_all_datan_locator, result_randomised_n_attempts, on='Previous Studies')
         result_merge2 = pd.merge(result_cont_contact_n_unreacheble, result_declined_n_consented, on='Previous Studies')
-        result = pd.merge(result_merge1, result_merge2, on='Previous Studies')
+        result_merge_3 = pd.merge(result_merge1, result_merge2, on='Previous Studies')
+        result = pd.merge(result_merge_3, self.total_offstudy, on='Previous Studies')
         return result

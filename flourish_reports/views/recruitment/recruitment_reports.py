@@ -61,6 +61,7 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
 
         declined_data = []
         consented_data = []
+        offstudy_data = []
         participants_not_reachable = []
         participants_to_call_again = []
         attempts_data = []
@@ -82,6 +83,7 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             total_existing.append(stats.existing_locator)
             declined_data.append([stats.study, stats.declined])
             consented_data.append([stats.study, stats.consented])
+            offstudy_data.append([stats.study, stats.offstudy])
 
             participants_not_reachable.append(
                 [stats.study, stats.not_reacheble])
