@@ -18,6 +18,7 @@ class GenerateStudyData:
         participants_not_reachable, total_participants_not_reachable = reports.participants_not_reachable()
         declined_reports, total_decline = reports.declined()
         consented_reports, total_consented = reports.consented()
+        offstudy_reports, total_offstudy = reports.offstudy()
         dataset, pie = caregiver_prev_study_dataset
 
         TotalRecruitmentStats.objects.all().delete()
@@ -72,6 +73,7 @@ class GenerateStudyData:
 
             # [['Tshipidi', 6], ['Tshilo Dikotla', 0], ['Mpepu', 29], ['Mashi', 0], ['Mma Bana', 33], ['All studies', 68]]
             consented = consented_reports[i][1]
+            offstudy = offstudy_reports[i][1]
 
             defaults = {
                 'dataset_total': dataset_total,
@@ -90,6 +92,7 @@ class GenerateStudyData:
                 'participants_to_call': participants_to_call,
                 'declined': declined,
                 'consented': consented,
+                'offstudy': offstudy
             }
             study = previous_studies[i]
             RecruitmentStats.objects.update_or_create(
