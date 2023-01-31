@@ -100,3 +100,8 @@ class RecruitmentStats(BaseUuidModel):
         verbose_name='Consented',
         blank=True,
         null=True)
+
+    offstudy = models.PositiveIntegerField(
+        verbose_name='Offstudy',
+        blank=True,
+        null=True)

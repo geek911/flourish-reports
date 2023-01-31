@@ -4,7 +4,10 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django_pandas.io import read_frame
 
-from flourish_caregiver.models import CaregiverLocator, MaternalDataset, SubjectConsent, ScreeningPriorBhpParticipants
+from flourish_caregiver.models import (
+    CaregiverLocator, MaternalDataset, SubjectConsent,
+    ScreeningPriorBhpParticipants)
+from flourish_prn.models import CaregiverOffStudy
 from flourish_follow.models import LogEntry, WorkList
 from flourish_child.models import ChildDataset
 
@@ -610,6 +613,38 @@ class RecruitmentReport:
         """Returns a report of consented participants.
         """
         df = self.consented_df
+        prev_study_list = []
+        total = 0
+        for prev_study in self.previous_studies:
+            df_prev = df[df['protocol'] == prev_study]
+            prev_study_list.append(
+                [prev_study, df_prev[df_prev.columns[0]].count()])
+            total += df_prev[df_prev.columns[0]].count()
+
+        prev_study_list.append(['All studies', total])
+        return prev_study_list, total
+
+    @property
+    def offstudy_df(self):
+        """Returns a data frame of consented participants who are now off study.
+        """
+        off_study_identifiers = CaregiverOffStudy.objects.values_list(
+            'subject_identifier', flat=True)
+        consents = SubjectConsent.objects.filter(
+            subject_identifier__in=off_study_identifiers).values_list(
+            'screening_identifier', flat=True)
+        consents = list(set(consents))
+        qs = MaternalDataset.objects.filter(
+            screening_identifier__in=consents)
+        df = read_frame(qs, fieldnames=[
+            'protocol', 'study_maternal_identifier'])
+        df = df.drop_duplicates(subset=['study_maternal_identifier'])
+        return df
+
+    def offstudy(self):
+        """Returns a report of consented participants who are offstudy.
+        """
+        df = self.offstudy_df
         prev_study_list = []
         total = 0
         for prev_study in self.previous_studies:
