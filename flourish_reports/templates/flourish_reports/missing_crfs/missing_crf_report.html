@@ -1,0 +1,35 @@
+{% extends "edc_dashboard/listboard.html" %}
+{% load admin_urls %}
+{% load edc_base_extras %}
+
+
+
+{% block listboard_table_header %}
+
+    <th>#</th>
+    <th>Subject Identifier</th>
+    <th>Title</th>
+    <th>Visit Code</th>
+    <th>CRFs<div>Missing/Total</div></th>
+    <th>Total PRNS</th>
+    <th>Total Req.</th>
+    <th>Visit</th>
+
+{% endblock listboard_table_header %}
+
+{% block listboard_table_button_column %}
+{% endblock listboard_table_button_column %}
+
+{% block listboard_table_columns %}
+
+    <td>{{ result.subject_identifier }}</td>
+    <td>{{ result.statistics.title }}</td>
+    <td>{{ result.statistics.visit_code }}</td>
+    <td>{{ result.statistics.missing_crfs  }}/{{ result.statistics.total_crfs }}</td>
+    <td> {{ result.statistics.missing_crfs_prn }} / {{ result.statistics.total_crfs_prn }}</td>
+    <td> {{ result.statistics.missing_requisitions }} / {{ result.statistics.total_requisitions }}</td>
+
+    <td><a href="{{ result.href }}">View Visit</a></td>
+    <td><a href="{% url 'flourish_reports:missing_crf_detailed_report_url' result.object.id %}">View Detailed Report</a></td>
+
+{% endblock listboard_table_columns %}
