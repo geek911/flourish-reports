@@ -19,11 +19,11 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
     navbar_name = 'flourish_reports'
     navbar_selected_item = 'flourish_reports'
 
-    study_stats = RecruitmentStats.objects.all()
-
-    total_recruitment = TotalRecruitmentStats.objects.first()
-
-    pie = PieTotalStats.objects.first()
+    # study_stats = RecruitmentStats.objects.all()
+    #
+    # total_recruitment = TotalRecruitmentStats.objects.first()
+    #
+    # pie = PieTotalStats.objects.first()
 
     def get_success_url(self):
         return reverse('flourish_reports:recruitment_report_url')
