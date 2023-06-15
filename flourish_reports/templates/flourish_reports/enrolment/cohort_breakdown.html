@@ -1,0 +1,24 @@
+<div class="panel-heading">{{ title }}</div>
+<div class="panel-body">
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Cohort</th>
+            <th scope="col">ANC</th>
+            <th scope="col">HEU</th>
+            <th scope="col">HUU</th>
+            <th scope="col">HEU + ART-3 Drug</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for cohort, total in data.items %}
+            <tr>
+                <td>{{ cohort }}</td>
+                {% for vallue in total %}
+                    <td>{{ vallue }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
