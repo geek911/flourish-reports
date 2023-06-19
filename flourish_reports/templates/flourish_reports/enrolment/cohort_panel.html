@@ -1,0 +1,25 @@
+<div class="panel panel-info">
+    <div class="panel-heading">{{ title }}</div>
+    <div class="panel-body">
+        <table class="table">
+            <thead>
+            <tr>
+                {% if heu_limit %}
+                    <th scope="col">HEU. Target: {{ heu_limit }}</th>
+                {% endif %}
+                {% if huu_limit %}
+                    <th scope="col">HUU. Target: {{ huu_limit }}</th>
+                {% endif %}
+                <th scope="col">HEU + ART-3 Drug - @ Preg. Target: {{ drug_limit }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                {% for key, value in data.items %}
+                    <td>{{ value | length }}</td>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

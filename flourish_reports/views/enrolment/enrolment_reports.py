@@ -151,6 +151,11 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
             description='enrolment_reports').order_by('uploaded_at')
 
         # Enrolment report
+        current_cohort_a = self.cohort_a(enrolment=False)
+        current_cohort_b = self.cohort_b(enrolment=False)
+        current_cohort_c = self.cohort_c(enrolment=False)
+
+        # Enrolment report
         cohort_a = self.cohort_a
         cohort_b = self.cohort_b
         cohort_c = self.cohort_c
@@ -164,6 +169,9 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
             cohort_a=cohort_a,
             cohort_b=cohort_b,
             cohort_c=cohort_c,
+            current_cohort_a=current_cohort_a,
+            current_cohort_c=current_cohort_c,
+            current_cohort_b=current_cohort_b,
             sec_aims=sec_aims, )
         return context
 

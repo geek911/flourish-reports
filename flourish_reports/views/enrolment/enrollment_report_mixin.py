@@ -45,9 +45,8 @@ class EnrolmentReportMixin:
         for cohort, values in table.items():
             cohort_report[cohort] = {'enrollment': self.get_cohort_enrolment_data(cohort)}
             for value in values[1:]:
-                cohort_report[cohort][value] = self.get_aged_up(prev_cohort=value,
-                                                                new_cohort=cohort)
-
+                cohort_report[cohort][value] = self.get_aged_up(prev_cohort=cohort,
+                                                                new_cohort=value)
         return cohort_report
 
     def get_data(self, key, cohort):
@@ -56,22 +55,29 @@ class EnrolmentReportMixin:
         else:
             return self.get_aged_up(new_cohort=key, prev_cohort=cohort)
 
-    def get_aged_up(self, prev_cohort, new_cohort):
-        if 'Cohort A' in prev_cohort:
+    def get_aged_up(self, new_cohort, prev_cohort):
+        if 'Cohort A' == prev_cohort:
             prev_cohort = 'cohort_a'
-        if 'Cohort B' in prev_cohort:
+        if 'Cohort B' == prev_cohort:
             prev_cohort = 'cohort_b'
-        if 'Cohort C' in prev_cohort:
+        if 'Cohort C' == prev_cohort:
             prev_cohort = 'cohort_c'
+        if 'Cohort A Secondary Aims' == prev_cohort:
+            prev_cohort = 'cohort_a_sec'
+        if 'Cohort B Secondary Aims' == prev_cohort:
+            prev_cohort = 'cohort_b_sec'
+        if 'Cohort C Secondary Aims' == prev_cohort:
+            prev_cohort = 'cohort_c_sec'
 
         enrolment_cohort = self.cohort_data(name=prev_cohort).values_list(
             'subject_identifier', flat=True).distinct()
         return self.latest_cohort_objs.filter(
-            name=new_cohort, subject_identifier__in=enrolment_cohort).count()
+            name=new_cohort, subject_identifier__in=enrolment_cohort).count() if \
+            prev_cohort != new_cohort else 0
 
     def cohort_data(self, name, enrolment=True):
-        return self.participants_cohort.filter(name=name, enrollment_cohort=True) if \
-            enrolment else self.latest_cohort_objs.filter(name=name)
+        return self.participants_cohort.filter(name=name, enrollment_cohort=enrolment) \
+            if enrolment else self.latest_cohort_objs.filter(name=name)
 
     def get_cohort_enrolment_data(self, cohort):
 
@@ -165,8 +171,10 @@ class EnrolmentReportMixin:
         cohort = self.get_cohort(cohort_name, enrolment=enrolment)
         heu = cohort.get('HEU').count()
         huu = cohort.get('HUU').count()
-        heu_3_drug_art_value = cohort.get('HEU 3-drug ART').count() if heu_3_drug_art else 0
-        return [self.get_pregnant_woman(cohort_name).count() if cohort_name == 'cohort_a' else 0,
+        heu_3_drug_art_value = cohort.get(
+            'HEU 3-drug ART').count() if heu_3_drug_art else 0
+        return [self.get_pregnant_woman(
+            cohort_name).count() if cohort_name == 'cohort_a' else 0,
                 heu, huu, heu_3_drug_art_value]
 
     def get_pregnant_woman(self, cohort_name):
@@ -212,11 +220,11 @@ class EnrolmentReportMixin:
                 study_maternal_identifiers=study_maternal_identifiers)
         }
 
-    def cohort_b(self, start_date=None, end_date=None):
+    def cohort_b(self, start_date=None, end_date=None, enrolment=True):
         """Returns totals for cohort B.
         """
 
-        study_maternal_identifiers = self.get_cohort_identifiers('cohort_b')
+        study_maternal_identifiers = self.get_cohort_identifiers('cohort_b', enrolment=enrolment)
 
         return {
             'HUU': self.unexposed_participants(
@@ -225,11 +233,11 @@ class EnrolmentReportMixin:
                 study_maternal_identifiers=study_maternal_identifiers)
         }
 
-    def cohort_c(self, start_date=None, end_date=None):
+    def cohort_c(self, start_date=None, end_date=None, enrolment=True):
         """Returns totals for cohort C.
         """
 
-        study_maternal_identifiers = self.get_cohort_identifiers('cohort_c')
+        study_maternal_identifiers = self.get_cohort_identifiers('cohort_c', enrolment=enrolment)
 
         return {
             'HUU': self.unexposed_participants(

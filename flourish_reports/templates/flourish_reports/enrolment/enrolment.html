@@ -11,3 +11,16 @@
 <div class="panel panel-info">
     {% cohort_breakdown generate_current_cohort_breakdown 'Current' %}
 </div>
+<div class="row">
+    <aside class="col-sm-6">
+        {% include "flourish_reports/enrolment/cohort_a.html" %}
+    </aside>
+    <!-- col.// -->
+    <aside class="col-sm-6">
+        {% cohort_b_panel current_cohort_b %}
+    </aside>
+    <!-- col.// -->
+    <aside class="col-sm-6">
+        {% cohort_c_panel current_cohort_c %}
+    </aside>
+</div>
