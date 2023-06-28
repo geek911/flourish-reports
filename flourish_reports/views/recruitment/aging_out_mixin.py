@@ -74,9 +74,10 @@ class AgingOutMixin:
                 if (5 < age_in_years <= 10 and current_cohort == 'cohort_a') or \
                    (age_in_years > 10 and current_cohort == 'cohort_b'):
 
-                    if consent.subject_identifier not in singular_stat[1]:
+                    if consent.subject_identifier in singular_stat[1]:
+                        continue
 
-                        singular_stat[1].append(consent.subject_identifier)
+                    singular_stat[1].append(consent.subject_identifier)
 
                 if singular_stat[1]:
                     statistics.append(singular_stat)
