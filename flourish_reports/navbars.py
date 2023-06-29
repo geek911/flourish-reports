@@ -23,4 +23,10 @@ flourish_reports.append_item(
                fa_icon='fa-cogs',
                url_name='flourish_reports:download_report_url'))
 
+flourish_reports.append_item(
+    NavbarItem(name='missing_crfs_reports',
+               label='Maternal Visit Missing Reports',
+               fa_icon='fa-cogs',
+               url_name='flourish_reports:missing_crf_report_url'))
+
 site_navbars.register(flourish_reports)
