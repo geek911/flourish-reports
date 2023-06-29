@@ -52,6 +52,7 @@ $(document).ready(function(){
                     <td>{{ stats.verbose_name }}</td>
                     <td>{{ stats.required }}</td>
                     <td>{{ stats.exist }}</td>
+                    {% comment %} <td>{{ stats.report_datetime }} {% endcomment %}
                 </tr>
             {% endfor %}
         </tbody>

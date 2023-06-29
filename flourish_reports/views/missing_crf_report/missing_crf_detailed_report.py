@@ -11,6 +11,7 @@ from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
 from .missing_crf_report_mixin import MissingCrfDetailedMixin
 from .missing_crf_data_statistics import MissingCRFDataStatistics
+from dateutil.relativedelta import relativedelta
 
 
 class MissingCrfDetailedReport(EdcBaseViewMixin,
@@ -43,24 +44,32 @@ class MissingCrfDetailedReport(EdcBaseViewMixin,
         self.statistics = MissingCRFDataStatistics()
         self.statistics.visit_object = self.object
 
-        # breakpoint()
-
         result = []
 
         for crf in self.statistics.crfs:
-            models_cls = django_apps.get_model(crf.model)
-            crf_obj = models_cls.objects.filter(maternal_visit=self.object)
 
-            result_dict = dict()
+            datetime_open = self.object.appointment.appt_datetime
+            datetime_close = datetime_open + relativedelta(months=3)
 
-            verbose_name = models_cls._meta.verbose_name
-            required = crf.required
+            if crf.required:
 
-            exist = True if crf_obj.exists() else False
+                models_cls = django_apps.get_model(crf.model)
 
-            result_dict['verbose_name'] = verbose_name
-            result_dict['required'] = required
-            result_dict['exist'] = exist
+                crf_objs = models_cls.objects.filter(
+                    maternal_visit=self.object,
+                    report_datetime__range=[datetime_open, datetime_close])
+                
 
-            result.append(result_dict)
+                result_dict = dict()
+
+                verbose_name = models_cls._meta.verbose_name
+                required = crf.required
+
+                exist = True if crf_objs.exists() else False
+
+                result_dict['verbose_name'] = verbose_name
+                result_dict['required'] = required
+                result_dict['exist'] = exist
+
+                result.append(result_dict)
         return result

@@ -31,5 +31,5 @@
 
     <td><a href="{{ result.href }}">View Visit</a></td>
     <td><a href="{% url 'flourish_reports:missing_crf_detailed_report_url' result.object.id %}">View Detailed Report</a></td>
-
+    <td> {{ result.timepoints }} </td>
 {% endblock listboard_table_columns %}
