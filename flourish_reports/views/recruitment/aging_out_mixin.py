@@ -2,6 +2,7 @@ from django.apps import apps as django_apps
 from edc_base.utils import age
 from flourish_caregiver.models.signals import cohort_assigned
 from datetime import datetime, timedelta
+from django.db.models.functions import Length
 
 
 class AgingOutMixin:
@@ -9,14 +10,24 @@ class AgingOutMixin:
     caregiver_child_consent_model = 'flourish_caregiver.caregiverchildconsent'
     subject_schedule_history_model = 'edc_visit_schedule.subjectschedulehistory'
     child_appointment_model = 'flourish_child.appointment'
+    edc_registered_model = 'edc_registration.registeredsubject'
+    child_dataset_model = 'flourish_child.childdataset'
 
     @property
     def caregiver_child_consent_cls(self):
         return django_apps.get_model(self.caregiver_child_consent_model)
 
     @property
+    def child_dataset_cls(self):
+        return django_apps.get_model(self.child_dataset_model)
+
+    @property
     def child_appointment_cls(self):
         return django_apps.get_model(self.child_appointment_model)
+
+    @property
+    def edc_registered_cls(self):
+        return django_apps.get_model(self.edc_registered_model)
 
     def get_dates_of_week(self):
         today = datetime.now().date()
@@ -58,28 +69,54 @@ class AgingOutMixin:
         return consents
 
     @property
+    def subject_identifiers(self):
+        subject_identifiers = self.caregiver_child_consent_cls.objects.filter(
+            study_child_identifier__isnull=False
+        ).values_list('subject_identifier', flat=True)
+
+        return set(subject_identifiers)
+
+    @property
     def ageing_out_statistics(self):
 
-        statistics = []
+        statistics = list()
+        included = set()
+        for subject_identifier in self.subject_identifiers:
 
-        for consent in self.child_consents_objs:
+            try:
 
-            appt = self.current_latest_schedule(consent.subject_identifier)
-            current_cohort = self.get_cohort(appt.schedule_name)
+                registered_subject = self.edc_registered_cls.objects.filter(
+                    subject_identifier=subject_identifier,
+                    dob__isnull=False
+                ).latest('consent_datetime')
 
-            for day in self.get_dates_of_week():
-                age_in_years = age(consent.child_dob, day).years
-                singular_stat = [day.strftime("%a %d %b %Y"), []]
+            except self.edc_registered_cls.DoesNotExist:
+                pass
+            else:
 
-                if (5 < age_in_years <= 10 and current_cohort == 'cohort_a') or \
-                   (age_in_years > 10 and current_cohort == 'cohort_b'):
+              
 
-                    if consent.subject_identifier in singular_stat[1]:
-                        continue
+                appt = self.current_latest_schedule(registered_subject.subject_identifier)
+                current_cohort = self.get_cohort(appt.schedule_name)
 
-                    singular_stat[1].append(consent.subject_identifier)
+                for day in self.get_dates_of_week():
+                    age_in_years = age(registered_subject.dob, day).years
+                    singular_stat = [day.strftime("%a %d %b %Y"), []]
 
-                if singular_stat[1]:
-                    statistics.append(singular_stat)
+                    if (5 < age_in_years <= 10 and current_cohort == 'cohort_a') or \
+                            (age_in_years > 10 and current_cohort == 'cohort_b'):
+
+                        if subject_identifier in included:
+                            continue
+                        else:
+                            singular_stat[1].append(registered_subject.subject_identifier)
+                            singular_stat[1].append(age_in_years)
+                            included.add(subject_identifier)
+
+        
+
+
+                    if singular_stat[1]:
+                        statistics.append(singular_stat)
 
         return statistics
