@@ -5,28 +5,27 @@ from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
-from edc_constants.constants import POS
 
 from .aging_out_mixin import AgingOutMixin
-from ...classes import RecruitmentReport, SummaryReport
-from ...models import RecruitmentStats, TotalRecruitmentStats, PieTotalStats 
-from ...classes.recruitment_reports import PieTotals
 from ..view_mixins import DownloadReportMixin
+from ...classes import RecruitmentReport, SummaryReport
+from ...classes.recruitment_reports import PieTotals
 from ...models import ExportFile
-from flourish_caregiver.helper_classes.maternal_status_helper import MaternalStatusHelper
-from django.db.models import Subquery, OuterRef
+from ...models import PieTotalStats, RecruitmentStats, TotalRecruitmentStats
+
+
 class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
-                            NavbarViewMixin, TemplateView, LoginRequiredMixin, 
+                            NavbarViewMixin, TemplateView, LoginRequiredMixin,
                             AgingOutMixin):
     template_name = 'flourish_reports/recruit/recruitment_reports.html'
     navbar_name = 'flourish_reports'
     navbar_selected_item = 'flourish_reports'
 
-    # study_stats = RecruitmentStats.objects.all()
-    #
-    # total_recruitment = TotalRecruitmentStats.objects.first()
-    #
-    # pie = PieTotalStats.objects.first()
+    study_stats = RecruitmentStats.objects.all()
+
+    total_recruitment = TotalRecruitmentStats.objects.first()
+
+    pie = PieTotalStats.objects.first()
 
     def get_success_url(self):
         return reverse('flourish_reports:recruitment_report_url')
