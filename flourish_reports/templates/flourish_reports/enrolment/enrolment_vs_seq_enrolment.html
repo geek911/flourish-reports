@@ -1,0 +1,30 @@
+<div class="panel-heading">Cohort Enrollments</div>
+<div class="panel-body">
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Cohort</th>
+            <th scope="col">Total Enrolled</th>
+            <th scope="col">Sequential Enrollment</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td></td>
+            <td></td>
+            <th>Cohort B</th>
+            <th>Cohort B Secondary Aims</th>
+            <th>Cohort C</th>
+            <th>Cohort C Secondary Aims</th>
+        </tr>
+        {% for cohort, total in cohort_report.items %}
+            <tr>
+                <td>{{ cohort }}</td>
+                {% for key, vallue in total.items %}
+                    <td>{{ vallue }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

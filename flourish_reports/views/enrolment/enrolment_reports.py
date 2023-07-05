@@ -18,7 +18,6 @@ from .enrollment_report_mixin import EnrolmentReportMixin
 
 class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
                           EdcBaseViewMixin, NavbarViewMixin, TemplateView, FormView):
-
     form_class = EnrolmentReportForm
     template_name = 'flourish_reports/enrolment_reports.html'
     navbar_name = 'flourish_reports'
@@ -36,31 +35,27 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
 
         a_heu_df = pandas.DataFrame(
             set(self.cohort_a_category_pids.get('HEU_pids')),
-            columns=['Cohort A: HEU (200)'])
+            columns=['Cohort A: HEU (450)'])
 
         a_huu_df = pandas.DataFrame(
             set(self.cohort_a_category_pids.get('HUU_pids')),
-            columns=['Cohort A: HUU (75)'])
+            columns=['Cohort A: HUU (325)'])
 
-        b_efv_df = pandas.DataFrame(
-            set(list(self.cohort_b_category_pids.get('EFV_pids'))),
-            columns=['Cohort B: EFV (100)'])
-
-        b_dtg_df = pandas.DataFrame(
-            set(list(self.cohort_b_category_pids.get('DTG_pids'))),
-            columns=['Cohort B: DTG (100)'])
-
-        b_hiv_preg_df = pandas.DataFrame(
-            set(list(self.cohort_b_category_pids.get('HIV-Preg_pids'))),
+        b_huu_df = pandas.DataFrame(
+            set(list(self.cohort_b_category_pids.get('HUU'))),
             columns=['Cohort B: HUU (100)'])
 
+        b_heu_df = pandas.DataFrame(
+            set(list(self.cohort_b_category_pids.get('HEU 3-drug ART'))),
+            columns=['Cohort B: HEU 3-drug ART (200)'])
+
         c_huu_df = pandas.DataFrame(
-            set(list(self.cohort_c_category_pids.get('HUU_pids'))),
+            set(list(self.cohort_c_category_pids.get('HUU'))),
             columns=['Cohort C: HUU (200)'])
 
-        c_pi_df = pandas.DataFrame(
-            set(list(self.cohort_c_category_pids.get('PI_pids'))),
-            columns=['Cohort C:  PI (100)'])
+        c_heu_df = pandas.DataFrame(
+            set(list(self.cohort_c_category_pids.get('HEU 3-drug ART'))),
+            columns=['Cohort C:  HEU 3-drug ART (100)'])
 
         sec_pos_preg_df = pandas.DataFrame(
             set(list(self.sec_aims_category_pids.get('WLHIV'))),
@@ -71,8 +66,7 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
             columns=['Secondary Aims: Women Living Without HIV'])
 
         frames = [a_preg_df, a_heu_df, a_huu_df,
-                  b_efv_df, b_dtg_df, b_hiv_preg_df,
-                  c_huu_df, c_pi_df, sec_pos_preg_df,
+                  b_huu_df, b_heu_df, c_huu_df, c_heu_df, sec_pos_preg_df,
                   sec_pos_neg_df]
 
         pids_df = pandas.concat(frames, axis=1)
@@ -94,8 +88,7 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
                                    columns=['Cohort Enrollments', 'Qty'])
 
             cohort_a = self.cohort_a(
-                start_date=start_date,
-                end_date=end_date)
+            )
 
             df2 = pandas.DataFrame(list(cohort_a.items()), columns=['Cohort A', 'Qty'])
 
@@ -112,7 +105,8 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
             sec_aims = self.sec_aims(
                 start_date=start_date,
                 end_date=end_date)
-            df5 = pandas.DataFrame(list(sec_aims.items()), columns=['Secondary Aims', 'Qty'])
+            df5 = pandas.DataFrame(list(sec_aims.items()),
+                                   columns=['Secondary Aims', 'Qty'])
 
             df = [df1, df2, df3, df4, df5]
 
@@ -157,18 +151,28 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
             description='enrolment_reports').order_by('uploaded_at')
 
         # Enrolment report
-        cohort_a = self.cohort_a()
-        cohort_b = self.cohort_b()
-        cohort_c = self.cohort_c()
+        current_cohort_a = self.cohort_a(enrolment=False)
+        current_cohort_b = self.cohort_b(enrolment=False)
+        current_cohort_c = self.cohort_c(enrolment=False)
+
+        # Enrolment report
+        cohort_a = self.cohort_a
+        cohort_b = self.cohort_b
+        cohort_c = self.cohort_c
         sec_aims = self.sec_aims()
 
         context.update(
             enrolment_downloads=enrolment_downloads,
             cohort_report=self.all_cohort_report(),
+            generate_enrolment_cohort_breakdown=self.generate_enrolment_cohort_breakdown,
+            generate_current_cohort_breakdown=self.generate_current_cohort_breakdown,
             cohort_a=cohort_a,
             cohort_b=cohort_b,
             cohort_c=cohort_c,
-            sec_aims=sec_aims,)
+            current_cohort_a=current_cohort_a,
+            current_cohort_c=current_cohort_c,
+            current_cohort_b=current_cohort_b,
+            sec_aims=sec_aims, )
         return context
 
     @method_decorator(login_required)
