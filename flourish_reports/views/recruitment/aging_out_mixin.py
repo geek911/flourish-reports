@@ -42,11 +42,15 @@ class AgingOutMixin:
             enrollment_date=consent.consent_datetime.date())
 
     def current_latest_schedule(self, subject_identifier):
-        latest_appointment = self.child_appointment_cls.objects.filter(
-            subject_identifier=subject_identifier
-        ).latest('appt_datetime')
 
-        return latest_appointment
+        try: 
+            latest_appointment = self.child_appointment_cls.objects.filter(
+                subject_identifier=subject_identifier
+            ).latest('appt_datetime')
+        except self.child_appointment_cls.DoesNotExist:
+            pass
+        else:
+            return latest_appointment
 
     def get_cohort(self, schedule_name):
         cohort_name = None
@@ -97,26 +101,28 @@ class AgingOutMixin:
               
 
                 appt = self.current_latest_schedule(registered_subject.subject_identifier)
-                current_cohort = self.get_cohort(appt.schedule_name)
 
-                for day in self.get_dates_of_week():
-                    age_in_years = age(registered_subject.dob, day).years
-                    singular_stat = [day.strftime("%a %d %b %Y"), []]
+                if appt:
+                    current_cohort = self.get_cohort(appt.schedule_name)
 
-                    if (5 < age_in_years <= 10 and current_cohort == 'cohort_a') or \
-                            (age_in_years > 10 and current_cohort == 'cohort_b'):
+                    for day in self.get_dates_of_week():
+                        age_in_years = age(registered_subject.dob, day).years
+                        singular_stat = [day.strftime("%a %d %b %Y"), []]
 
-                        if subject_identifier in included:
-                            continue
-                        else:
-                            singular_stat[1].append(registered_subject.subject_identifier)
-                            singular_stat[1].append(age_in_years)
-                            included.add(subject_identifier)
+                        if (5 < age_in_years <= 10 and current_cohort == 'cohort_a') or \
+                                (age_in_years > 10 and current_cohort == 'cohort_b'):
 
-        
+                            if subject_identifier in included:
+                                continue
+                            else:
+                                singular_stat[1].append(registered_subject.subject_identifier)
+                                singular_stat[1].append(age_in_years)
+                                included.add(subject_identifier)
+
+            
 
 
-                    if singular_stat[1]:
-                        statistics.append(singular_stat)
+                        if singular_stat[1]:
+                            statistics.append(singular_stat)
 
         return statistics
