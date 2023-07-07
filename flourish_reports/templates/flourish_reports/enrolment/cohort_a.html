@@ -1,3 +1,4 @@
+{% load flourish_reports_dashboard_extras %}
 <div class="panel panel-info">
     <div class="panel-heading">Cohort A</div>
     <div class="panel-body">
@@ -11,9 +12,9 @@
             </thead>
             <tbody>
             <tr>
-                {% for key, value in current_cohort_a.items %}
-                    <td>{{ value | length }}</td>
-                {% endfor %}
+                <td>{{ cohort_a|get_item:'ANC' }}</td>
+                <td>{{ cohort_a|get_item:'Exposed' }}</td>
+                <td>{{ cohort_a|get_item:'Unexposed' }}</td>
             </tr>
             </tbody>
         </table>

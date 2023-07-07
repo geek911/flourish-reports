@@ -1,3 +1,4 @@
+{% load flourish_reports_dashboard_extras %}
 <div class="panel-heading">{{ title }}</div>
 <div class="panel-body">
     <table class="table">
@@ -14,9 +15,10 @@
         {% for cohort, total in data.items %}
             <tr>
                 <td>{{ cohort }}</td>
-                {% for vallue in total %}
-                    <td>{{ vallue }}</td>
-                {% endfor %}
+                <td>{{ data|get_item:cohort|get_item:"ANC" }}</td>
+                <td>{{ data|get_item:cohort|get_item:"Exposed" }}</td>
+                <td>{{ data|get_item:cohort|get_item:"Unexposed" }}</td>
+                <td>{{ data|get_item:cohort|get_item:"3drug" }}</td>
             </tr>
         {% endfor %}
         </tbody>
