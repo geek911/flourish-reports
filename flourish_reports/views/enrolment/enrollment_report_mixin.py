@@ -1,7 +1,18 @@
+import re
 from collections import defaultdict
 
 from django.apps import apps as django_apps
 from django.db.models import Max
+
+
+def convert_to_snake_case(string):
+    snake_case_string = re.sub(r'\s', '_', string.lower())
+    return snake_case_string
+
+
+def convert_to_title_case(snake_case_string):
+    title_case_string = snake_case_string.replace("_", " ").title()
+    return title_case_string
 
 
 class EnrolmentReportMixin:
@@ -24,6 +35,35 @@ class EnrolmentReportMixin:
 
         return self.participants_cohort.filter(id__in=latest_cohort_objs_ids)
 
+    @property
+    def child_consent_objs(self):
+        return self.child_consents_cls.objects.all()
+
+    @property
+    def child_birth_objs(self):
+        return self.child_birth_cls.objects.all()
+
+    def get_enrolment_by_cohort(self, cohort, enrollment_cohort=True):
+        return self.participants_cohort.filter(
+            name=cohort, enrollment_cohort=enrollment_cohort).values_list(
+            'subject_identifier', flat=True)
+
+    def get_current_by_cohort(self, cohort):
+        enrolment_cohort = self.latest_cohort_objs.filter(
+            name=cohort).values_list('subject_identifier', flat=True)
+        return set(list(enrolment_cohort))
+
+    def get_seq_by_cohort(self, enrol_cohort, seq_cohort):
+        enrolment_cohort = self.get_enrolment_by_cohort(enrol_cohort)
+        seq_by_cohort = []
+        for participant in enrolment_cohort:
+            participants_cohort = self.participants_cohort.filter(
+                subject_identifier=participant, name=seq_cohort)
+            if participants_cohort.exists():
+                seq_by_cohort.append(participant)
+
+        return set(list(seq_by_cohort))
+
     def all_cohort_report(self, start_date=None, end_date=None):
         """Return a total enrolment per cohort.
         """
@@ -34,356 +74,95 @@ class EnrolmentReportMixin:
                          'cohort_c_sec'],
             'Cohort C': ['enrollment', 'cohort_b', 'cohort_b_sec', 'cohort_c',
                          'cohort_c_sec'],
-            'Cohort A Secondary Aims': ['enrollment', 'cohort_b', 'cohort_b_sec',
-                                        'cohort_c', 'cohort_c_sec'],
-            'Cohort B Secondary Aims': ['enrollment', 'cohort_b', 'cohort_b_sec',
-                                        'cohort_c', 'cohort_c_sec'],
-            'Cohort C Secondary Aims': ['enrollment', 'cohort_b', 'cohort_b_sec',
-                                        'cohort_c', 'cohort_c_sec'],
+            'Cohort A Sec': ['enrollment', 'cohort_b', 'cohort_b_sec', 'cohort_c',
+                             'cohort_c_sec'],
+            'Cohort B Sec': ['enrollment', 'cohort_b', 'cohort_b_sec', 'cohort_c',
+                             'cohort_c_sec'],
+            'Cohort C Sec': ['enrollment', 'cohort_b', 'cohort_b_sec', 'cohort_c',
+                             'cohort_c_sec'],
         }
         cohort_report = {}
         for cohort, values in table.items():
-            cohort_report[cohort] = {'enrollment': self.get_cohort_enrolment_data(cohort)}
+            cohort_to_snake_case = convert_to_snake_case(cohort)
+            cohort_report[cohort] = {'enrollment': self.get_enrolment_by_cohort(
+                cohort_to_snake_case).count()}
             for value in values[1:]:
-                cohort_report[cohort][value] = self.get_aged_up(prev_cohort=cohort,
-                                                                new_cohort=value)
+                if value == cohort_to_snake_case or cohort_to_snake_case in value or \
+                        value in cohort_to_snake_case:
+                    cohort_report[cohort][value] = 0
+                    continue
+                cohort_report[cohort][value] = len(self.get_seq_by_cohort(
+                    enrol_cohort=cohort_to_snake_case, seq_cohort=value))
         return cohort_report
 
-    def get_data(self, key, cohort):
-        if key == 'enrollment':
-            return self.get_cohort_enrolment_data(cohort=cohort)
+    @property
+    def enrolment_exposure_summary(self):
+        cohorts = ['cohort_a', 'cohort_b', 'cohort_c', 'cohort_a_sec', 'cohort_b_sec',
+                   'cohort_c_sec']
+        enrolment_exposure_summary = defaultdict(lambda: defaultdict(int))
+
+        for cohort in cohorts:
+            participants = self.get_enrolment_by_cohort(cohort=cohort)
+            cohort_name = convert_to_title_case(cohort)
+            for participant in participants:
+                exposure = self.check_exposure(participant)
+                enrolment_exposure_summary[cohort_name][exposure] += 1
+                if participant[:-3] in self.heu_art_3drug_combination:
+                    enrolment_exposure_summary[cohort_name]['3drug'] += 1
+        return enrolment_exposure_summary
+
+    @property
+    def current_exposure_summary(self):
+        current_exposure_summary = defaultdict(lambda: defaultdict(int))
+
+        participants = self.child_consent_objs.only('subject_identifier').values_list(
+            'subject_identifier', flat=True)
+        for participant in set(list(participants)):
+            try:
+                latest_obj = self.participants_cohort.filter(
+                    subject_identifier=participant).latest('assign_datetime')
+            except self.cohort_cls.DoesNotExist:
+                continue
+            else:
+                exposure = self.check_exposure(participant)
+                cohort_name = convert_to_title_case(latest_obj.name)
+                current_exposure_summary[cohort_name][exposure] += 1
+                if participant[:-3] in self.heu_art_3drug_combination:
+                    current_exposure_summary[cohort_name]['3drug'] += 1
+        return current_exposure_summary
+
+    def check_exposure(self, participant):
+        study_child_identifier = self.child_consent_objs.filter(
+            subject_identifier=participant).only('study_child_identifier').latest(
+            'consent_datetime').study_child_identifier
+        if study_child_identifier in self.unexposed_participants:
+            return 'Unexposed'
+        elif study_child_identifier in self.exposed_participants:
+            return 'Exposed'
         else:
-            return self.get_aged_up(new_cohort=key, prev_cohort=cohort)
+            return 'ANC'
 
-    def get_aged_up(self, new_cohort, prev_cohort):
-        if 'Cohort A' == prev_cohort:
-            prev_cohort = 'cohort_a'
-        if 'Cohort B' == prev_cohort:
-            prev_cohort = 'cohort_b'
-        if 'Cohort C' == prev_cohort:
-            prev_cohort = 'cohort_c'
-        if 'Cohort A Secondary Aims' == prev_cohort:
-            prev_cohort = 'cohort_a_sec'
-        if 'Cohort B Secondary Aims' == prev_cohort:
-            prev_cohort = 'cohort_b_sec'
-        if 'Cohort C Secondary Aims' == prev_cohort:
-            prev_cohort = 'cohort_c_sec'
-
-        enrolment_cohort = self.cohort_data(name=prev_cohort).values_list(
-            'subject_identifier', flat=True).distinct()
-        return self.latest_cohort_objs.filter(
-            name=new_cohort, subject_identifier__in=enrolment_cohort).count() if \
-            prev_cohort != new_cohort else 0
-
-    def cohort_data(self, name, enrolment=True):
-        return self.participants_cohort.filter(name=name, enrollment_cohort=enrolment) \
-            if enrolment else self.latest_cohort_objs.filter(name=name)
-
-    def get_cohort_enrolment_data(self, cohort):
-
-        reports_totals = {
-            'Cohort A': 0,
-            'Cohort A Secondary Aims': self.cohort_data(name='cohort_a_sec').count(),
-            'Cohort B': 0,
-            'Cohort B Secondary Aims': self.cohort_data(name='cohort_b_sec').count(),
-            'Cohort C': 0,
-            'Cohort C Secondary Aims': self.cohort_data(name='cohort_c_sec').count()
-        }
-
-        # reusing functions to get the total for each cohort
-
-        for value in self.cohort_a().values():
-            reports_totals['Cohort A'] += value.count()
-
-        for value in self.cohort_b().values():
-            reports_totals['Cohort B'] += value.count()
-
-        for value in self.cohort_c().values():
-            reports_totals['Cohort C'] += value.count()
-
-        # reports_totals['Cohort A Secondary Aims'] = consents.
-
-        return reports_totals[cohort]
-
-    def get_cohort_identifiers(self, cohort, enrolment=True):
-
-        cohort_identifiers = self.cohort_data(
-            name=cohort, enrolment=enrolment).values_list('subject_identifier', flat=True)
-
-        caregiver_ids = [subj_id[:-3] for subj_id in cohort_identifiers]
-
-        study_maternal_identifiers = self.maternal_dataset_cls.objects.filter(
-            subject_identifier__in=caregiver_ids).values_list(
-            'study_maternal_identifier', flat=True)
-
-        return study_maternal_identifiers
-
-    def get_study_child_identifiers(self, study_maternal_identifiers):
-
-        study_child_identifiers = self.child_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers).values_list(
+    @property
+    def exposed_participants(self):
+        exposed_values = ['Exposed', 'exposed']
+        return self.child_dataset_cls.objects.filter(
+            infant_hiv_exposed__in=exposed_values).values_list(
             'study_child_identifier', flat=True)
 
-        return study_child_identifiers
-
-    def exposed_participants(self, study_maternal_identifiers):
-        return self.child_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            infant_hiv_exposed__in=['Exposed', 'exposed']).distinct()
-
-    def unexposed_participants(self, study_maternal_identifiers):
-        return self.child_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            infant_hiv_exposed__in=['Unexposed', 'unexposed']).distinct()
-
     @property
-    def generate_enrolment_cohort_breakdown(self):
-        cohorts = {
-            'Cohort A': self.get_breakdown('cohort_a'),
-            'Cohort B': self.get_breakdown('cohort_b', heu_3_drug_art=True),
-            'Cohort C': self.get_breakdown('cohort_c', heu_3_drug_art=True),
-            'Cohort A Secondary Aims': self.get_breakdown('cohort_a_sec'),
-            'Cohort B Secondary Aims': self.get_breakdown('cohort_b_sec',
-                                                          heu_3_drug_art=True),
-            'Cohort C Secondary Aims': self.get_breakdown('cohort_c_sec',
-                                                          heu_3_drug_art=True)
-        }
-        return cohorts
-
-    @property
-    def generate_current_cohort_breakdown(self):
-        cohorts = {
-            'Cohort A': self.get_breakdown('cohort_a', enrolment=False),
-            'Cohort B': self.get_breakdown('cohort_b', enrolment=False,
-                                           heu_3_drug_art=True),
-            'Cohort C': self.get_breakdown('cohort_c', enrolment=False,
-                                           heu_3_drug_art=True),
-            'Cohort A Secondary Aims': self.get_breakdown('cohort_a_sec',
-                                                          enrolment=False),
-            'Cohort B Secondary Aims': self.get_breakdown('cohort_b_sec', enrolment=False,
-                                                          heu_3_drug_art=True),
-            'Cohort C Secondary Aims': self.get_breakdown('cohort_c_sec', enrolment=False,
-                                                          heu_3_drug_art=True)
-        }
-        return cohorts
-
-    def get_breakdown(self, cohort_name, enrolment=True, heu_3_drug_art=False):
-        cohort = self.get_cohort(cohort_name, enrolment=enrolment)
-        heu = cohort.get('HEU').count()
-        huu = cohort.get('HUU').count()
-        heu_3_drug_art_value = cohort.get(
-            'HEU 3-drug ART').count() if heu_3_drug_art else 0
-        return [self.get_pregnant_woman(
-            cohort_name).count() if cohort_name == 'cohort_a' else 0,
-                heu, huu, heu_3_drug_art_value]
-
-    def get_pregnant_woman(self, cohort_name):
-        return self.cohort_a(enrolment=True).get(
-            'preg_woman') if cohort_name == 'cohort_a' else 0
-
-    @property
-    def ante_enrol(self):
-        return self.ante_enrol_cls.objects.all()
-
-    def cohort_a(self, start_date=None, end_date=None, enrolment=True):
-        """Returns totals for cohort A.
-        """
-        study_maternal_identifiers = self.get_cohort_identifiers('cohort_a',
-                                                                 enrolment=enrolment)
-
-        return {
-            'preg_woman': self.ante_enrol,
-            'HEU': self.exposed_participants(
-                study_maternal_identifiers=study_maternal_identifiers),
-            'HUU': self.unexposed_participants(
-                study_maternal_identifiers=study_maternal_identifiers)
-        }
-
-    def heu_art_3drug_combination(self, study_maternal_identifiers):
-        exposed_participants = self.exposed_participants(
-            study_maternal_identifiers=study_maternal_identifiers).values_list(
+    def heu_art_3drug_combination(self):
+        exposed_values = ['Exposed', 'exposed']
+        exposed_participants = self.child_dataset_cls.objects.filter(
+            infant_hiv_exposed__in=exposed_values).values_list(
             'study_maternal_identifier', flat=True)
+
         return self.maternal_dataset_cls.objects.filter(
             study_maternal_identifier__in=exposed_participants,
-            mom_pregarv_strat='3-drug ART').values_list('study_maternal_identifier')
-
-    def get_cohort(self, cohort_type, enrolment=True):
-        study_maternal_identifiers = self.get_cohort_identifiers(cohort_type,
-                                                                 enrolment=enrolment)
-
-        return {
-            'HUU': self.unexposed_participants(
-                study_maternal_identifiers=study_maternal_identifiers),
-            'HEU 3-drug ART': self.heu_art_3drug_combination(
-                study_maternal_identifiers=study_maternal_identifiers),
-            'HEU': self.exposed_participants(
-                study_maternal_identifiers=study_maternal_identifiers)
-        }
-
-    def cohort_b(self, start_date=None, end_date=None, enrolment=True):
-        """Returns totals for cohort B.
-        """
-
-        study_maternal_identifiers = self.get_cohort_identifiers('cohort_b', enrolment=enrolment)
-
-        return {
-            'HUU': self.unexposed_participants(
-                study_maternal_identifiers=study_maternal_identifiers),
-            'HEU 3-drug ART': self.heu_art_3drug_combination(
-                study_maternal_identifiers=study_maternal_identifiers)
-        }
-
-    def cohort_c(self, start_date=None, end_date=None, enrolment=True):
-        """Returns totals for cohort C.
-        """
-
-        study_maternal_identifiers = self.get_cohort_identifiers('cohort_c', enrolment=enrolment)
-
-        return {
-            'HUU': self.unexposed_participants(
-                study_maternal_identifiers=study_maternal_identifiers),
-            'HEU 3-drug ART': self.heu_art_3drug_combination(
-                study_maternal_identifiers=study_maternal_identifiers)
-        }
-
-    def sec_aims(self, start_date=None, end_date=None):
-        """Returns totals for Secondary Aims.
-        """
-        cohort_sec_identifiers = self.child_consents_cls.objects.filter(
-            cohort__icontains='_sec').values_list('study_child_identifier')
-
-        study_maternal_identifiers = self.child_dataset_cls.objects.values_list(
-            'study_maternal_identifier', flat=True).filter(
-            study_child_identifier__in=cohort_sec_identifiers)
-
-        hiv_pos_preg_counts = self.maternal_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            mom_hivstatus='HIV-infected').values_list('study_maternal_identifier')
-
-        self.hiv_pos_preg = self.get_study_child_identifiers(hiv_pos_preg_counts)
-
-        hiv_neg_preg_counts = self.maternal_dataset_cls.objects.filter(
-            study_maternal_identifier__in=study_maternal_identifiers,
-            mom_hivstatus='HIV-uninfected').values_list('study_maternal_identifier')
-
-        self.hiv_neg_preg_sec = self.get_study_child_identifiers(hiv_neg_preg_counts)
-
-        cohort_sec_dict = {
-            'WLHIV': len(set(self.hiv_pos_preg)),
-            'HIV -': len(set(self.hiv_neg_preg_sec))
-        }
-        return cohort_sec_dict
-
-    def get_preg_child_pid(self, maternal_subject_identifier):
-
-        try:
-            child_birth = self.child_birth_cls.objects.get(
-                subject_identifier__startswith=maternal_subject_identifier)
-        except self.child_birth_cls.DoesNotExist:
-            try:
-                child_consent = self.child_consents_cls.objects.filter(
-                    subject_identifier__startswith=maternal_subject_identifier,
-                    first_name='',
-                    last_name='',
-                    child_dob__isnull=True).distinct()[0]
-            except self.child_consents_cls.DoesNotExist:
-                return None
-            else:
-                return child_consent.subject_identifier
-        else:
-            return child_birth.subject_identifier
+            mom_pregarv_strat='3-drug ART').values_list('subject_identifier', flat=True)
 
     @property
-    def cohort_a_category_pids(self):
-
-        cohort_a_heus = self.cohort_a().get('HEU').values_list('study_child_identifier')
-
-        cohort_a_huus = self.cohort_a().get('HUU').values_list('study_child_identifier')
-
-        heus_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=cohort_a_heus).values_list(
-            'subject_identifier', flat=True)
-
-        huus_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=cohort_a_huus).values_list(
-            'subject_identifier', flat=True)
-
-        preg_pids = self.ante_enrol.values_list('subject_identifier', flat=True)
-
-        cohort_a_pids_dict = {
-            'preg_woman_pids': [self.get_preg_child_pid(pid) for
-                                pid in preg_pids],
-            'HEU_pids': heus_pids,
-            'HUU_pids': huus_pids
-        }
-
-        return cohort_a_pids_dict
-
-    @property
-    def cohort_b_category_pids(self):
-
-        huu_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=self.get_cohort(
-                cohort_type='cohort_b', enrolment=False).get('HUU').values_list(
-                'study_child_identifier')).values_list('subject_identifier', flat=True)
-
-        heu_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=self.get_cohort(
-                cohort_type='cohort_b', enrolment=False).get('HEU').values_list(
-                'study_child_identifier')).values_list('subject_identifier', flat=True)
-
-        heu_art_3drug = self.child_consents_cls.objects.filter(
-            subject_consent__subject_identifier__in=self.get_cohort(
-                cohort_type='cohort_b', enrolment=False).get(
-                'HEU 3-drug ART').values_list('subject_identifier')).values_list(
-            'subject_identifier', flat=True)
-
-        cohort_b_pids_dict = {
-            'HUU': huu_pids,
-            'HEU': heu_pids,
-            'HEU 3-drug ART': heu_art_3drug,
-        }
-
-        return cohort_b_pids_dict
-
-    @property
-    def cohort_c_category_pids(self, ):
-
-        huu_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=self.get_cohort(
-                cohort_type='cohort_c', enrolment=False).get('HUU').values_list(
-                'study_child_identifier')).values_list('subject_identifier', flat=True)
-
-        heu_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=self.get_cohort(
-                cohort_type='cohort_c', enrolment=False).get('HEU').values_list(
-                'study_child_identifier')).values_list('subject_identifier', flat=True)
-
-        heu_art_3drug = self.child_consents_cls.objects.filter(
-            subject_consent__subject_identifier__in=self.get_cohort(
-                cohort_type='cohort_c', enrolment=False).get(
-                'HEU 3-drug ART').values_list('subject_identifier')).values_list(
-            'subject_identifier', flat=True)
-
-        return {
-            'HUU': huu_pids,
-            'HEU': heu_pids,
-            'HEU 3-drug ART': heu_art_3drug,
-        }
-
-    @property
-    def sec_aims_category_pids(self, ):
-
-        hiv_pos_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=self.hiv_pos_preg).values_list(
-            'subject_identifier', flat=True)
-
-        hiv_neg_sec_pids = self.child_consents_cls.objects.filter(
-            study_child_identifier__in=self.hiv_neg_preg_sec).values_list(
-            'subject_identifier', flat=True)
-
-        cohort_sec_pids_dict = {
-            'WLHIV': hiv_pos_pids,
-            'HIV -': hiv_neg_sec_pids
-        }
-        return cohort_sec_pids_dict
+    def unexposed_participants(self):
+        unexposed_values = ['Unexposed', 'unexposed']
+        return self.child_dataset_cls.objects.filter(
+            infant_hiv_exposed__in=unexposed_values).values_list(
+            'study_child_identifier', flat=True)
