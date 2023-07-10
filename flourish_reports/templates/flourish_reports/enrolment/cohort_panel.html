@@ -1,3 +1,5 @@
+{% load flourish_reports_dashboard_extras %}
+
 <div class="panel panel-info">
     <div class="panel-heading">{{ title }}</div>
     <div class="panel-body">
@@ -15,9 +17,8 @@
             </thead>
             <tbody>
             <tr>
-                {% for key, value in data.items %}
-                    <td>{{ value | length }}</td>
-                {% endfor %}
+                <td>{{ data|get_item:'Unexposed' }}</td>
+                <td>{{ data|get_item:'3drug' }}</td>
             </tr>
             </tbody>
         </table>
