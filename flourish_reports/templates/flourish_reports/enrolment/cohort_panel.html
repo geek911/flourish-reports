@@ -1,12 +1,18 @@
 {% load flourish_reports_dashboard_extras %}
+
 <div class="panel panel-info">
-    <div class="panel-heading">Cohort C</div>
+    <div class="panel-heading">{{ title }}</div>
     <div class="panel-body">
         <table class="table">
             <thead>
             <tr>
-                <th scope="col">HUU. Target: 200</th>
-                <th scope="col">PI. Target: 100</th>
+                {% if heu_limit %}
+                    <th scope="col">HEU. Target: {{ heu_limit }}</th>
+                {% endif %}
+                {% if huu_limit %}
+                    <th scope="col">HUU. Target: {{ huu_limit }}</th>
+                {% endif %}
+                <th scope="col">HEU + ART-3 Drug - @ Preg. Target: {{ drug_limit }}</th>
             </tr>
             </thead>
             <tbody>

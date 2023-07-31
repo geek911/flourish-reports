@@ -1,40 +1,26 @@
+{% load flourish_reports_dashboard_extras %}
+
 <div class="panel panel-info">
-  <div class="panel-heading">Cohort Enrollments</div>
-  <div class="panel-body">
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Cohort</th>
-          <th scope="col">Total Enrolled</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for cohort, total in cohort_report.items %}
-        <tr>
-          <td>{{ cohort }}</td>
-          <td>{{ total }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    {% include 'flourish_reports/enrolment/enrolment_vs_seq_enrolment.html' %}
 </div>
-<br />
+<br/>
+<div class="panel panel-info">
+    {% cohort_breakdown enrolment_exposure_summary 'Enrolment' %}
+</div>
+<br/>
+<div class="panel panel-info">
+    {% cohort_breakdown current_exposure_summary 'Current' %}
+</div>
 <div class="row">
-  <aside class="col-sm-6">
-    {% include "flourish_reports/enrolment/cohort_a.html" %}
-  </aside>
-  <!-- col.// -->
-  <aside class="col-sm-6">
-    {% include "flourish_reports/enrolment/cohort_b.html" %}
-  </aside>
-  <!-- col.// -->
-  <aside class="col-sm-6">
-    {% include "flourish_reports/enrolment/cohort_c.html" %}
-  </aside>
-  <!-- col.// -->
-  <aside class="col-sm-6">
-    {% include "flourish_reports/enrolment/secondary_aims.html" %}
-  </aside>
-  <!-- col.// -->
+    <aside class="col-sm-6">
+        {% include "flourish_reports/enrolment/cohort_a.html" %}
+    </aside>
+    <!-- col.// -->
+    <aside class="col-sm-6">
+        {% cohort_b_panel cohort_b %}
+    </aside>
+    <!-- col.// -->
+    <aside class="col-sm-6">
+        {% cohort_c_panel cohort_c %}
+    </aside>
 </div>

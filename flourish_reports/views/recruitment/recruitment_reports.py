@@ -6,15 +6,17 @@ from django.views.generic.base import TemplateView
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_navbar import NavbarViewMixin
 
-from ...classes import RecruitmentReport, SummaryReport
-from ...models import RecruitmentStats, TotalRecruitmentStats, PieTotalStats 
-from ...classes.recruitment_reports import PieTotals
+from .aging_out_mixin import AgingOutMixin
 from ..view_mixins import DownloadReportMixin
+from ...classes import RecruitmentReport, SummaryReport
+from ...classes.recruitment_reports import PieTotals
 from ...models import ExportFile
+from ...models import PieTotalStats, RecruitmentStats, TotalRecruitmentStats
 
 
 class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
-                            NavbarViewMixin, TemplateView, LoginRequiredMixin):
+                            NavbarViewMixin, TemplateView, LoginRequiredMixin,
+                            AgingOutMixin):
     template_name = 'flourish_reports/recruit/recruitment_reports.html'
     navbar_name = 'flourish_reports'
     navbar_selected_item = 'flourish_reports'
@@ -170,6 +172,7 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             consented=consented_data,
             summary_data_downloads=summary_data_downloads,
             summary_pie=summary_pie,
+            ageing_out_statistics = self.ageing_out_statistics,
 
             # Summary report
             summary_report=summary_report

@@ -615,6 +615,52 @@ function closeNav() {
 				</div>
 		</div>
 	</div>
+
+	<h2 class="text-center">AGE OUT REPORT <input type="button" value="Show/Hide" onClick="showHideDiv('aging_out_report')"/></h2>
+	<div class="container" id="aging_out_report">
+		<div class="tab-content">
+
+			<div class="tab-pane well active in active" id="home">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="panel panel-info">
+						  <div class="panel-heading">
+								AGE UP WEEKLY REPORT
+							</div>
+						  <div class="panel-body">
+						  <div class="table-responsive">
+						  <table class="table table-striped">
+							  <thead>
+								<tr>
+									<th>WEEK DATES</th>
+									<th>SUBJECT IDENTIFIERS</th>
+									<th>AGE THIS WEEK<th>
+									<th>DOB</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								{% for stats in ageing_out_statistics %}
+									<tr>
+										<td>{{ stats.0 }}</td>
+										<td>{{ stats.1.0 }} </td>
+										<td>{{ stats.1.1 }} </td>
+										<td>{{ stats.1.2}}</td>
+									
+									</tr>
+								{% endfor %}
+							  </tbody>
+							</table>
+							</div>
+						  </div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						 <div id="barchart_material" style="width: 500px; height: 360px;"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 {% endblock main %}

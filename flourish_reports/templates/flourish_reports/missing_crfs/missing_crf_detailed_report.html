@@ -1,0 +1,67 @@
+{% extends 'edc_base/base.html' %}
+
+{% load static %}
+
+{% comment %} {% block extra-scripts %}
+{{ block.super }}
+<script>
+
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+    $("#success-alert").fadeTo(1000, 500).slideUp(500, function(){
+        $("#success-alert").slideUp(500);
+    });    
+});
+
+</script>
+{% endblock extra-scripts %}  {% endcomment %}
+{% comment %} 
+{% block extra-styles %}
+{{ block.super }}
+<style>
+  .panel-extended {
+    min-height: 200px;
+    overflow-y: scroll;
+  }
+  </style>
+{% endblock %}
+
+ {% endcomment %}
+
+{% block topbar_navbar_extra_items %}
+
+    {{ block.super }}
+    {{ navbar.name }}
+
+{% endblock topbar_navbar_extra_items %}
+{% block main %}
+<h1>Maternal Visit {{ object.visit_code }}</h1>
+
+<hr>
+
+<div style="width: 80%">
+    <table class="table">
+        <thead>
+            <th>CRF Name</th>
+            <th>Required</th>
+            <th>Data Exist </th>
+        </thead>
+        <tbody>
+            {% for stats in crf_statistics %}
+                <tr>
+                    <td>{{ stats.verbose_name }}</td>
+                    <td>{{ stats.required }}</td>
+                    <td>{{ stats.exist }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock main %}
+
+
+{% comment %} {% block modals %}
+
+{{ block.super }}
+    {% include 'flourish_reports/help_modal.html' %}
+{% endblock modals %} {% endcomment %}
