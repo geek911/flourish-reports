@@ -11,25 +11,14 @@ def cohort_breakdown(data, title):
     )
 
 
-@register.inclusion_tag('flourish_reports/enrolment/cohort_panel.html')
-def cohort_b_panel(data):
-    title = 'Cohort B'
+@register.inclusion_tag('flourish_reports/enrolment/targets_reports.html')
+def targets_reports(data, heu_target, huu_target):
     return dict(
-        data=data,
-        title=title,
-        huu_limit=100,
-        drug_limit=200,
-    )
-
-
-@register.inclusion_tag('flourish_reports/enrolment/cohort_panel.html')
-def cohort_c_panel(data):
-    title = 'Cohort C'
-    return dict(
-        data=data,
-        title=title,
-        huu_limit=200,
-        drug_limit=100,
+        title=data.get('cohort_name'),
+        heu_target=heu_target,
+        huu_target=huu_target,
+        unexposed=data.get('unexposed'),
+        exposed=data.get('exposed'),
     )
 
 
@@ -39,17 +28,7 @@ def get_item(dictionary, key):
         return dictionary.get(key)
 
 
-@register.filter
-def get_item_key(dictionary, key):
-    title_to_snake_case_key = title_to_snake_case(key)
-    if dictionary is not None and isinstance(dictionary, dict):
-        return dictionary.get(title_to_snake_case_key)
-
-
-def title_to_snake_case(title):
-    # Replace spaces with underscores
-    snake = title.replace(" ", "_")
-    # Convert all characters to lower case
-    snake = snake.lower()
-    # Return the snake case string
-    return snake
+@register.simple_tag
+def convert_to_title_case(snake_case_string):
+    title_case_string = snake_case_string.replace("_", " ").title()
+    return title_case_string
