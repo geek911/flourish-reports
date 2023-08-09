@@ -1,3 +1,5 @@
+{% load flourish_reports_dashboard_extras %}
+
 <div class="panel-heading">Cohort Enrollments</div>
 <div class="panel-body">
     <table class="table">
@@ -17,11 +19,12 @@
             <th>Cohort C</th>
             <th>Cohort C Secondary Aims</th>
         </tr>
-        {% for cohort, total in cohort_report.items %}
+        {% for key, value in get_enrolment_total.items %}
             <tr>
-                <td>{{ cohort }}</td>
-                {% for key, vallue in total.items %}
-                    <td>{{ vallue }}</td>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+                {% for sub_key in get_sequence|get_item_key:key %}
+                    <td>{{ get_sequence|get_item_key:key|get_item_key:sub_key }}</td>
                 {% endfor %}
             </tr>
         {% endfor %}
