@@ -1,18 +1,18 @@
 {% load flourish_reports_dashboard_extras %}
 <div class="panel panel-info">
-    <div class="panel-heading">Cohort C</div>
+    <div class="panel-heading">{{ title }}</div>
     <div class="panel-body">
         <table class="table">
             <thead>
             <tr>
-                <th scope="col">HUU. Target: 200</th>
-                <th scope="col">PI. Target: 100</th>
+                <th scope="col">HEU. Target: {{ heu_target }}</th>
+                <th scope="col">HUU. Target: {{ huu_target }}</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <td>{{ data|get_item:'Unexposed' }}</td>
-                <td>{{ data|get_item:'3drug' }}</td>
+                <td>{{ exposed }}</td>
+                <td>{{ unexposed }}</td>
             </tr>
             </tbody>
         </table>

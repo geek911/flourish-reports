@@ -13,14 +13,12 @@
 </div>
 <div class="row">
     <aside class="col-sm-6">
-        {% include "flourish_reports/enrolment/cohort_a.html" %}
+        {% targets_reports current_report.0 450 325 %}
     </aside>
-    <!-- col.// -->
     <aside class="col-sm-6">
-        {% cohort_b_panel current_cohort_b %}
+        {% targets_reports current_report.1 200 100 %}
     </aside>
-    <!-- col.// -->
     <aside class="col-sm-6">
-        {% cohort_c_panel current_cohort_c %}
+        {% targets_reports current_report.2 100 200 %}
     </aside>
 </div>

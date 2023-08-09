@@ -1,32 +1,40 @@
 {% load flourish_reports_dashboard_extras %}
 
-<div class="panel-heading">Cohort Enrollments</div>
+<div class="panel-heading">Recategorization Report</div>
 <div class="panel-body">
     <table class="table">
         <thead>
         <tr>
             <th scope="col">Cohort</th>
             <th scope="col">Total Enrolled</th>
-            <th scope="col">Sequential Enrollment</th>
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td></td>
-            <td></td>
-            <th>Cohort B</th>
-            <th>Cohort B Secondary Aims</th>
-            <th>Cohort C</th>
-            <th>Cohort C Secondary Aims</th>
-        </tr>
         {% for key, value in get_enrolment_total.items %}
             <tr>
                 <td>{{ key }}</td>
                 <td>{{ value }}</td>
-                {% for sub_key in get_sequence|get_item_key:key %}
-                    <td>{{ get_sequence|get_item_key:key|get_item_key:sub_key }}</td>
-                {% endfor %}
             </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Enrolment Cohort</th>
+            <th>Sequential Cohort</th>
+            <th>Count</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key, values in get_sequence.items %}
+            {% for cohort, count in values.items %}
+                <tr>
+                    <td>{% convert_to_title_case key %}</td>
+                    <td>{% convert_to_title_case cohort %}</td>
+                    <td>{{ count }}</td>
+                </tr>
+            {% endfor %}
         {% endfor %}
         </tbody>
     </table>
