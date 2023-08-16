@@ -39,14 +39,14 @@ class EnrolmentReportMixin:
 
         return movements
 
-    def generate_report(self, enroll=False, schedule_status=False):
+    def generate_report(self, enroll=False, current_cohort=False):
         cohorts = ['cohort_a', 'cohort_b', 'cohort_c', 'cohort_a_sec', 'cohort_b_sec',
                    'cohort_c_sec']
 
         report = []
         all_cohorts = self.get_cohorts(enroll)
-        if schedule_status:
-            all_cohorts = all_cohorts.filter(schedule_status=schedule_status)
+        if current_cohort:
+            all_cohorts = all_cohorts.filter(current_cohort=current_cohort)
 
         for cohort_name in cohorts:
             title_case_cohort_name = convert_to_title_case(cohort_name)
@@ -67,7 +67,7 @@ class EnrolmentReportMixin:
 
     @property
     def current_report(self):
-        return self.generate_report(enroll=False, schedule_status=True)
+        return self.generate_report(enroll=False, current_cohort=True)
 
     @property
     def enrollment_report(self):
