@@ -1,15 +1,15 @@
 {% load flourish_reports_dashboard_extras %}
 
 <div class="panel panel-info">
-    {% include 'flourish_reports/enrolment/enrolment_vs_seq_enrolment.html' %}
-</div>
-<br/>
-<div class="panel panel-info">
     {% cohort_breakdown enrollment_report 'Enrolment' %}
 </div>
 <br/>
 <div class="panel panel-info">
     {% cohort_breakdown current_report 'Current' %}
+</div>
+<br/>
+<div class="panel panel-info">
+    {% include 'flourish_reports/enrolment/enrolment_vs_seq_enrolment.html' %}
 </div>
 <div class="row">
     <aside class="col-sm-6">

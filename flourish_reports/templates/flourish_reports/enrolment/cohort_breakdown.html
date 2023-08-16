@@ -18,7 +18,9 @@
                 <td>{{ values|get_item:'cohort_name' }}</td>
                 <td>{{ values|get_item:'unexposed' }}</td>
                 <td>{{ values|get_item:'exposed' }}</td>
-                <td>{{ values|get_item:'unexposed'|add:values|get_item:'exposed' }}</th>
+               	{% with unexposed=values|get_item:'unexposed' exposed=values|get_item:'exposed' %}
+               		<td>{{ unexposed|add:exposed }}</th>
+               	{% endwith %}
             </tr>
         {% endfor %}
         </tbody>
