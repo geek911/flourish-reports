@@ -8,6 +8,8 @@
             <th scope="col">Cohort</th>
             <th scope="col">HUU</th>
             <th scope="col">HEU</th>
+            <th scope="col">Total Enrolled</th>
+            
         </tr>
         </thead>
         <tbody>
@@ -16,6 +18,7 @@
                 <td>{{ values|get_item:'cohort_name' }}</td>
                 <td>{{ values|get_item:'unexposed' }}</td>
                 <td>{{ values|get_item:'exposed' }}</td>
+                <td>{{ values|get_item:'unexposed'|add:values|get_item:'exposed' }}</th>
             </tr>
         {% endfor %}
         </tbody>
