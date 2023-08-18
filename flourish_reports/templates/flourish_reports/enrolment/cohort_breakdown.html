@@ -22,6 +22,22 @@
                		<td>{{ unexposed|add:exposed }}</th>
                	{% endwith %}
             </tr>
+            {% if values|get_item:'cohort_name' == 'Cohort A' %}
+            	{% with cohort_breakdown='cohort_a'|get_cohort_breakdown:title %}
+            		{% for breakdown in cohort_breakdown %}
+            			<tr>
+			                <td>
+			                	<li>{{ breakdown|get_item:'cohort_name' }}</li>
+			                </td>
+			                <td>{{ breakdown|get_item:'unexposed' }}</td>
+			                <td>{{ breakdown|get_item:'exposed' }}</td>
+			               	{% with unexposed=breakdown|get_item:'unexposed' exposed=breakdown|get_item:'exposed' %}
+			               		<td>{{ unexposed|add:exposed }}</th>
+			               	{% endwith %}
+			            </tr>
+            		{% endfor %}
+            	{% endwith %}
+            {% endif %}
         {% endfor %}
         </tbody>
     </table>

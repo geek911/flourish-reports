@@ -31,13 +31,11 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
         context = super().get_context_data(**kwargs)
         current_report = self.current_report
         enrollment_report = self.enrollment_report
-        get_enrolment_total = self.get_enrolment_total
         get_sequence = self.get_sequence
         get_sequence = self.convert_to_regular_dict(get_sequence)
         context.update(
             current_report=current_report,
             enrollment_report=enrollment_report,
-            get_enrolment_total=get_enrolment_total,
             get_sequence=get_sequence,
         )
         return context
