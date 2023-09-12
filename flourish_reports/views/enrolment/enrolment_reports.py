@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.contrib.auth.decorators import login_required
 from django.urls.base import reverse
 from django.utils.decorators import method_decorator
@@ -9,7 +11,6 @@ from edc_navbar import NavbarViewMixin
 from .enrollment_report_mixin import EnrolmentReportMixin
 from ..view_mixins import DownloadReportMixin
 from ...forms import EnrolmentReportForm
-from ...models import ExportFile
 
 
 class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
@@ -22,26 +23,28 @@ class EnrolmentReportView(DownloadReportMixin, EnrolmentReportMixin,
     def get_success_url(self):
         return reverse('flourish_reports:enrolment_report_url')
 
+    @property
+    def cohort_category_pids(self):
+        return
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        enrolment_downloads = ExportFile.objects.filter(
-            description='enrolment_reports').order_by('uploaded_at')
-
-        cohort_a = self.current_exposure_summary.get('Cohort A')
-        cohort_b = self.current_exposure_summary.get('Cohort B')
-        cohort_c = self.current_exposure_summary.get('Cohort C')
-
+        current_report = self.current_report
+        enrollment_report = self.enrollment_report
+        get_sequence = self.get_sequence
+        get_sequence = self.convert_to_regular_dict(get_sequence)
         context.update(
-            enrolment_downloads=enrolment_downloads,
-            cohort_report=self.all_cohort_report(),
-            cohort_a=dict(cohort_a),
-            cohort_b=dict(cohort_b),
-            cohort_c=dict(cohort_c),
-            enrolment_exposure_summary=self.enrolment_exposure_summary,
-            current_exposure_summary=self.current_exposure_summary,
+            current_report=current_report,
+            enrollment_report=enrollment_report,
+            get_sequence=get_sequence,
         )
         return context
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
+    def convert_to_regular_dict(self, d):
+        if isinstance(d, defaultdict):
+            d = {k: self.convert_to_regular_dict(v) for k, v in d.items()}
+        return d

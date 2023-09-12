@@ -1,25 +1,43 @@
 {% load flourish_reports_dashboard_extras %}
+
 <div class="panel-heading">{{ title }}</div>
 <div class="panel-body">
     <table class="table">
         <thead>
         <tr>
             <th scope="col">Cohort</th>
-            <th scope="col">ANC</th>
-            <th scope="col">HEU</th>
             <th scope="col">HUU</th>
-            <th scope="col">HEU + ART-3 Drug</th>
+            <th scope="col">HEU</th>
+            <th scope="col">Total Enrolled</th>
+            
         </tr>
         </thead>
         <tbody>
-        {% for cohort, total in data.items %}
+        {% for values in data %}
             <tr>
-                <td>{{ cohort }}</td>
-                <td>{{ data|get_item:cohort|get_item:"ANC" }}</td>
-                <td>{{ data|get_item:cohort|get_item:"Exposed" }}</td>
-                <td>{{ data|get_item:cohort|get_item:"Unexposed" }}</td>
-                <td>{{ data|get_item:cohort|get_item:"3drug" }}</td>
+                <td>{{ values|get_item:'cohort_name' }}</td>
+                <td>{{ values|get_item:'unexposed' }}</td>
+                <td>{{ values|get_item:'exposed' }}</td>
+               	{% with unexposed=values|get_item:'unexposed' exposed=values|get_item:'exposed' %}
+               		<td>{{ unexposed|add:exposed }}</th>
+               	{% endwith %}
             </tr>
+            {% if values|get_item:'cohort_name' == 'Cohort A' %}
+            	{% with cohort_breakdown='cohort_a'|get_cohort_breakdown:title %}
+            		{% for breakdown in cohort_breakdown %}
+            			<tr>
+			                <td>
+			                	<li>{{ breakdown|get_item:'cohort_name' }}</li>
+			                </td>
+			                <td>{{ breakdown|get_item:'unexposed' }}</td>
+			                <td>{{ breakdown|get_item:'exposed' }}</td>
+			               	{% with unexposed=breakdown|get_item:'unexposed' exposed=breakdown|get_item:'exposed' %}
+			               		<td>{{ unexposed|add:exposed }}</th>
+			               	{% endwith %}
+			            </tr>
+            		{% endfor %}
+            	{% endwith %}
+            {% endif %}
         {% endfor %}
         </tbody>
     </table>

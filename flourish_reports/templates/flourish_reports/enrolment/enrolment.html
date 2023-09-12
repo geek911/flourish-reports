@@ -1,26 +1,24 @@
 {% load flourish_reports_dashboard_extras %}
 
 <div class="panel panel-info">
+    {% cohort_breakdown current_report 'Current' %}
+</div>
+<br/>
+<div class="panel panel-info">
+    {% cohort_breakdown enrollment_report 'Enrolment' %}
+</div>
+<br/>
+<div class="panel panel-info">
     {% include 'flourish_reports/enrolment/enrolment_vs_seq_enrolment.html' %}
-</div>
-<br/>
-<div class="panel panel-info">
-    {% cohort_breakdown enrolment_exposure_summary 'Enrolment' %}
-</div>
-<br/>
-<div class="panel panel-info">
-    {% cohort_breakdown current_exposure_summary 'Current' %}
 </div>
 <div class="row">
     <aside class="col-sm-6">
-        {% include "flourish_reports/enrolment/cohort_a.html" %}
+        {% targets_reports current_report.0 450 325 %}
     </aside>
-    <!-- col.// -->
     <aside class="col-sm-6">
-        {% cohort_b_panel cohort_b %}
+        {% targets_reports current_report.1 200 100 %}
     </aside>
-    <!-- col.// -->
     <aside class="col-sm-6">
-        {% cohort_c_panel cohort_c %}
+        {% targets_reports current_report.2 100 200 %}
     </aside>
 </div>
