@@ -10,7 +10,12 @@ def convert_to_title_case(snake_case_string):
 
 
 class EnrolmentReportMixin:
-    cohort_cls = django_apps.get_model('flourish_caregiver.cohort')
+    child_consents_cls = django_apps.get_model('flourish_caregiver.caregiverchildconsent')
+    maternal_dataset_cls = django_apps.get_model('flourish_caregiver.maternaldataset')
+    # cohort_cls = django_apps.get_model('flourish_caregiver.cohort')
+    child_dataset_cls = django_apps.get_model('flourish_child.childdataset')
+    child_birth_cls = django_apps.get_model('flourish_child.childbirth')
+    ante_enrol_cls = django_apps.get_model('flourish_caregiver.antenatalenrollment')
 
     @property
     def participants_cohort(self):
