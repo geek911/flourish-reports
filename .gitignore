@@ -130,3 +130,6 @@ dmypy.json
 .pydevproject
 .project
 .settings/
+
+# Jetbrains ide configs
+**/.idea/*
