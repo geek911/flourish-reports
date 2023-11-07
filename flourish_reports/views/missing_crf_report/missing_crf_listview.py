@@ -4,7 +4,7 @@ from edc_dashboard.view_mixins import ListboardFilterViewMixin, SearchFormViewMi
 from edc_dashboard.views import ListboardView
 from edc_navbar import NavbarViewMixin
 from ...model_wrappers import CaregiverAppointmentModelWrapper
-
+from flourish_child.models import  Appointment as ChildAppointments
 
 class MissingCrfListView(EdcBaseViewMixin,
                          NavbarViewMixin,
@@ -22,13 +22,13 @@ class MissingCrfListView(EdcBaseViewMixin,
 
     maternal_visit_model = 'flourish_caregiver.maternalvisit'
 
+    ordering = 'appt_datetime'
+
     @property
     def maternal_visit_cls(self):
         return django_apps.get_model(self.maternal_visit_model)
 
     def get_queryset(self):
-
-        subject_identifiers = self.maternal_visit_cls.objects.values_list(
-            'subject_identifier', flat=True)
-
-        return super().get_queryset().filter(subject_identifier__in=subject_identifiers)
+        queryset = super().get_queryset()
+        maternal_visits = self.maternal_visit_cls.objects.all()
+        return queryset.filter(maternalvisit__in=maternal_visits)

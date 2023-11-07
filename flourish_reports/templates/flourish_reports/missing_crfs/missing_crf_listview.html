@@ -7,8 +7,10 @@
     <th>#</th>
     <th>Subject Identifier</th>
     <th>Appt Status</th>
+    <th>Appt Date</th>
     <th>Visit Code</th>
-    <th>Visit Code Sequence</th>
+    <th style="text-align: center">Sequence</th>
+    <th>CRF Missing</th>
 
 
 {% endblock listboard_table_header %}
@@ -20,9 +22,11 @@
 {% block listboard_table_columns %}
 
     <td>{{ result.subject_identifier }}</td>
-    <td>{{ result.appt_status }}</td>
+    <td>{{ result.appt_status | title }}</td>
+{#    <td>{{ result.appt_datetime }}</td>#}
     <td>{{ result.visit_code }}</td>
-    <td>{%  firstof result.visit_code_sequence  '0' %}</td>
+    <td style="text-align: center">{% firstof result.visit_code_sequence  '0' %}</td>
+    <td> {{ result.crf_metadata }}</td>
 
 
 {% endblock listboard_table_columns %}
