@@ -38,21 +38,29 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
         # Download reports
         download = self.request.GET.get('download', None)
         if download == "locator":
-            self.download_data(description="Locator Data",  report_type="Locator Data", df=reports.locator_df)
+            self.download_data(description="Locator Data",
+                               report_type="Locator Data", df=reports.locator_df)
         elif download == "worklist_data":
-            self.download_data(description="Worklist Study Data",  report_type="Worklist Study Data", df=reports.randomised_df)
+            self.download_data(description="Worklist Study Data",
+                               report_type="Worklist Study Data", df=reports.randomised_df)
         elif download == "call_attempts":
-            self.download_data(description="Call Attempts Data",  report_type="Call Attempts Data", df=reports.attempts_df)
+            self.download_data(description="Call Attempts Data",
+                               report_type="Call Attempts Data", df=reports.attempts_df)
         elif download == "continued_contact":
-            self.download_data(description="Continued Contact Data", report_type="Continued Contact Data", df=reports.to_call_df)
+            self.download_data(description="Continued Contact Data",
+                               report_type="Continued Contact Data", df=reports.to_call_df)
         elif download == "not_reacheble":
-            self.download_data(description="Not Reacheble  Data",  report_type="Not Reacheble  Data", df=reports.not_reacheble_df)
+            self.download_data(description="Not Reacheble  Data",
+                               report_type="Not Reacheble  Data", df=reports.not_reacheble_df)
         elif download == "declined":
-            self.download_data(description="Declined  Data",  report_type="Declined  Data", df=reports.declined_df)
+            self.download_data(description="Declined  Data",
+                               report_type="Declined  Data", df=reports.declined_df)
         elif download == "consented":
-            self.download_data(description="Consented  Data",  report_type="Consented  Data", df=reports.consented_df)
+            self.download_data(description="Consented  Data",
+                               report_type="Consented  Data", df=reports.consented_df)
         elif download == "summary":
-            self.download_data(description="Summary  Data",  report_type="Summary  Data", df=reports.identifiers_summary_df)
+            self.download_data(description="Summary  Data",
+                               report_type="Summary  Data", df=reports.identifiers_summary_df)
 
         prev_study_data = []
         previous_studies = []
@@ -127,21 +135,21 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
 
         # Downloaed files
         locator_data_downloads = ExportFile.objects.filter(
-                description="Locator Data").order_by('uploaded_at')
+            description="Locator Data").order_by('uploaded_at')
         worklist_data_downloads = ExportFile.objects.filter(
-                description="Worklist Study Data").order_by('uploaded_at')
+            description="Worklist Study Data").order_by('uploaded_at')
         call_attempts_data_downloads = ExportFile.objects.filter(
-                description="Call Attempts Data").order_by('uploaded_at')
+            description="Call Attempts Data").order_by('uploaded_at')
         continued_contact_data_downloads = ExportFile.objects.filter(
-                description="Continued Contact Data").order_by('uploaded_at')
+            description="Continued Contact Data").order_by('uploaded_at')
         not_reacheble_data_downloads = ExportFile.objects.filter(
-                description="Not Reacheble  Data").order_by('uploaded_at')
+            description="Not Reacheble  Data").order_by('uploaded_at')
         declined_data_downloads = ExportFile.objects.filter(
-                description="Declined  Data").order_by('uploaded_at')
+            description="Declined  Data").order_by('uploaded_at')
         consented_data_downloads = ExportFile.objects.filter(
-                description="Consented  Data").order_by('uploaded_at')
+            description="Consented  Data").order_by('uploaded_at')
         summary_data_downloads = ExportFile.objects.filter(
-                description="Summary  Data").order_by('uploaded_at')
+            description="Summary  Data").order_by('uploaded_at')
 
         table_defination = '<table class="fixed table table-hover table-sm table-condensed ">'
         summary_report = SummaryReport(study_stats=self.study_stats).summary_report.to_html()
@@ -172,7 +180,7 @@ class RecruitmentReportView(EdcBaseViewMixin, DownloadReportMixin,
             consented=consented_data,
             summary_data_downloads=summary_data_downloads,
             summary_pie=summary_pie,
-            ageing_out_statistics = self.ageing_out_statistics,
+            ageing_out_statistics=self.ageing_out_statistics,
 
             # Summary report
             summary_report=summary_report

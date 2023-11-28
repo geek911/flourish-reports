@@ -18,13 +18,12 @@ class CaregiverAppointmentModelWrapper(ModelWrapper):
         return django_apps.get_model(self.crf_metadata_model)
 
     @property
-    def crf_metadata(self):
+    def missing_crf(self):
         crf_metadata = self.crf_metadata_cls.objects.filter(
             subject_identifier=self.object.subject_identifier,
             visit_code=self.object.visit_code,
             visit_code_sequence=self.object.visit_code_sequence,
-            entry_status = REQUIRED
+            entry_status=REQUIRED
         )
 
-
-        return  crf_metadata.count()
+        return crf_metadata.count()
