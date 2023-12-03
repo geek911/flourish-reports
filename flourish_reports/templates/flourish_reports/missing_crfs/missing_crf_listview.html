@@ -1,0 +1,34 @@
+{% extends "edc_dashboard/listboard.html" %}
+
+
+
+{% block listboard_table_header %}
+
+<th>#</th>
+<th>Subject Identifier</th>
+<th>Appt Status</th>
+<th>Appt Date</th>
+<th>Visit Code</th>
+<th>Missing CRFs</th>
+<th>Dashboard</th>
+
+
+
+{% endblock listboard_table_header %}
+
+
+{% block listboard_table_button_column %}
+{% endblock %}
+
+{% block listboard_table_columns %}
+
+<td>{{ result.subject_identifier }}</td>
+<td>{{ result.appt_status | title }}</td>
+{# <td>{{ result.appt_datetime }}</td>#}
+<td>{{ result.visit_code }}</td>
+<td>{% firstof result.visit_code_sequence '0' %}</td>
+<td>{{ result.missing_crf }}</td>
+<td><a href="" class="btn btn-primary">Dashboard</a></td>
+
+
+{% endblock listboard_table_columns %}
