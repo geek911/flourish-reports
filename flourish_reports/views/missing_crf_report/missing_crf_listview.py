@@ -2,7 +2,7 @@ import csv
 import pandas as pd
 from datetime import date
 from typing import Any
-from django.db.models import Model
+from django.db.models import Model, Q
 from django.apps import apps as django_apps
 from django.db.models import OuterRef, Subquery, Count
 from django.http import HttpRequest, HttpResponse
@@ -77,7 +77,6 @@ class MissingCrfListView(EdcBaseViewMixin,
                     df = pd.DataFrame(temp_list)
 
                     crf_metadata_list.append(df)
-            date
 
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = f'attachment; filename="missing_crf_{date.today().isoformat()}.csv"'
@@ -94,18 +93,19 @@ class MissingCrfListView(EdcBaseViewMixin,
 
         maternal_visits = self.maternal_visit_cls.objects.all()
         appt_id = list()
+        before_date = []
 
-        for appt in queryset.only('id'):
+        for appt in queryset.only('id', 'appt_datetime'):
 
             crf_metadata = CrfMetadata.objects.filter(
+                Q(created__lte=appt.appt_datetime) | Q(modified__lte=appt.appt_datetime),
                 subject_identifier=appt.subject_identifier,
                 visit_code=appt.visit_code,
                 visit_code_sequence=appt.visit_code_sequence,
-                entry_status=REQUIRED
-            )
+                entry_status=REQUIRED)
 
-            if crf_metadata.count() != 1:
+            if crf_metadata.exists():
                 appt_id.append(appt.id)
 
         return queryset.filter(
-            maternalvisit__in=maternal_visits).exclude(id__in=appt_id,)
+            maternalvisit__in=maternal_visits).filter(id__in=appt_id, )
