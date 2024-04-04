@@ -1,4 +1,5 @@
 {% extends "edc_dashboard/listboard.html" %}
+
 {% block listboard_table_header %}
 
 <th>#</th>
@@ -23,8 +24,13 @@
 <td>{{ result.missing_crf_count }}</td>
 <td>{{ result.missing_crf_names }}</td>
 
+
 {% endblock listboard_table_columns %}
+
 
 {% block extra_content%}
 <a href="?download=True" style="margin-bottom: 1.5em" class="btn btn-primary">Download Export</a>
 {% endblock extra_content %}
+
+
+
