@@ -17,6 +17,8 @@ from flourish_child.models import Appointment as ChildAppointments
 from edc_metadata.models import CrfMetadata
 from edc_metadata.constants import REQUIRED
 from ...util import MigrationHelper
+
+
 class MissingCrfListView(EdcBaseViewMixin,
                          NavbarViewMixin,
                          ListboardFilterViewMixin,
@@ -114,11 +116,10 @@ class MissingCrfListView(EdcBaseViewMixin,
                 date_created = migration_helper.get_date_created(crf_metadata.model)
 
                 if date_created and date_created < crf_metadata_obj.created.date():
-                     continue
-                
+                    continue
+
                 appt_id.append(appt.id)
-                   
 
         return queryset.filter(
             maternalvisit__in=maternal_visits).filter(
-                id__in=appt_id, )
+            id__in=appt_id, )
